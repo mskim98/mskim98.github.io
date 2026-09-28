@@ -1,0 +1,1709 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>김민성 · 백엔드 포트폴리오 — 이커머스 / AI 튜터링</title>
+  <link rel="icon" href="data:," />
+  <!--
+    김민성 백엔드 포트폴리오 슬라이드 덱
+    이 덱이 메인 포트폴리오 (2026-09-22 확정). PORTFOLIO.html 은 구 문서이며 최신화 대상이 아니다
+    수치의 출처는 backend/report/ 의 실측 원장 — PORTFOLIO.html 의 서술·그림은 파생본이라 근거로 쓰지 않는다
+    디자인 원본: .claude/skills/portfolio-build/references/frosted-glass-teal.html
+    슬라이드 1장 = <section class="slide">. 좌우 방향키·휠로 이동, 왼쪽 레일은 JS가 자동 생성.
+  -->
+  <style>
+    :root {
+      --ink: #1c2740;
+      --muted: #4a5670;
+      --card: rgba(255, 255, 255, 0.78);
+      --line: rgba(89, 114, 145, 0.24);
+      --blue: #246bff;
+      --blue-2: #1747c9;
+      --navy: #233150;
+      --teal: #1194a8;
+      --green: #17864a;
+      --amber: #e08a2b;
+      --accent: #246bff;                 /* 테마 강조색: 이 한 줄만 바꾸면 전체 톤 변경 */
+      --guide-display: block;            /* 이미지 안내 라벨 표시 여부 (레일 토글로 none 전환) */
+      --slide-bg:
+        radial-gradient(1200px 700px at 8% -6%, rgba(120, 190, 235, 0.34), transparent 60%),
+        radial-gradient(1100px 800px at 104% 108%, rgba(150, 205, 220, 0.28), transparent 60%),
+        linear-gradient(158deg, #e2eef7 0%, #eef6fb 48%, #e6f1f6 100%);
+    }
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; margin: 0; overflow: hidden;
+      color: var(--ink);
+      font-family: Pretendard, Inter, "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.55; background: #0d1524;
+      -webkit-font-smoothing: antialiased;
+      word-break: keep-all; overflow-wrap: break-word;
+    }
+
+    /* ===================== deck shell (rail + stage) ===================== */
+    body { display: flex; height: 100vh; }
+    .rail {
+      width: 200px; flex: none; height: 100vh; overflow-y: auto;
+      background: #0d1524; border-right: 1px solid rgba(255,255,255,0.08);
+      padding: 14px 12px 16px; display: flex; flex-direction: column; gap: 11px;
+    }
+    .rail-title { color: #8ea0bd; font: 800 11px/1.3 Inter, system-ui, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; padding: 2px 4px 4px; }
+    .thumb {
+      position: relative; aspect-ratio: 16 / 9; border-radius: 9px; overflow: hidden; cursor: pointer;
+      border: 2px solid transparent; background: #0b1120; box-shadow: 0 2px 8px rgba(0,0,0,0.34);
+      padding: 0; transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    .thumb:hover { transform: translateY(-1px); }
+    .thumb.active { border-color: var(--accent); }
+    .thumb .mini { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .thumb .mini .slide { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 1 !important; visibility: visible !important; transition: none; pointer-events: none; }
+    .thumb .cap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; justify-content: space-between; gap: 5px; align-items: baseline; padding: 12px 7px 4px; font: 700 9px/1.2 Inter, system-ui, sans-serif; color: #fff; background: linear-gradient(transparent, rgba(6,10,20,0.86)); }
+    .thumb .cap .n { font-weight: 800; opacity: 0.85; }
+    .thumb .cap .l { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rail-btn { margin-top: auto; flex: none; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #b7c4da; font: 700 11px Inter, system-ui, sans-serif; border-radius: 8px; padding: 9px 10px; cursor: pointer; }
+    .rail-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+    .viewport { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: radial-gradient(1200px 800px at 50% -8%, #1a2942, #0b111e); }
+    .stage { position: relative; width: 1280px; height: 720px; flex: none; transform-origin: center center; border-radius: 6px; overflow: hidden; box-shadow: 0 30px 90px rgba(0,0,0,0.5); }
+
+    /* ---------- slide frame (fills the stage; container-query sized) ---------- */
+    .slide {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      container-type: size; overflow: hidden;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity 0.35s ease; background: var(--slide-bg);
+    }
+    .slide.active { opacity: 1; visibility: visible; pointer-events: auto; z-index: 1; }
+    .slide::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.5) 0.5px, transparent 0.6px);
+      background-size: 5px 5px; opacity: 0.28; mix-blend-mode: overlay;
+    }
+    .pad { position: absolute; inset: 0; padding: 5.6cqh 5cqw; display: flex; flex-direction: column; }
+
+    /* ---------- shared type ---------- */
+    h1, h2, h3, h4, p { margin: 0; }
+    .watermark { position: absolute; top: 4.6cqh; right: 5cqw; color: #8091a8; font-size: 1.75cqh; font-weight: 600; letter-spacing: 0.02em; z-index: 2; }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: max(0.9em, 1.7cqh); color: var(--blue-2); background: rgba(36,107,255,0.08); padding: 0.08em 0.32em; border-radius: 4px; }
+    .hl { color: var(--blue-2); font-weight: 800; }
+    .lead-p, .result-card p, .xp p, .panel p, .figcap, .blist li, .mcard small, .trace-row .tx, .head-title .sub, .tl-card p, .pj-card p, .toc-item .tt { text-wrap: balance; }
+
+    /* ---------- slide header ---------- */
+    .head { display: grid; grid-template-columns: auto 1fr; gap: 2cqw; align-items: center; margin-bottom: 3cqh; flex: none; }
+    .folder {
+      position: relative; width: 7.4cqh; height: 7.4cqh; border-radius: 1.2cqh;
+      display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 2.7cqh; font-style: italic;
+      background: linear-gradient(150deg, var(--accent) 0%, #1b57cf 100%);
+      box-shadow: 0 6px 16px rgba(29, 87, 207, 0.38), inset 0 2px 3px rgba(255, 255, 255, 0.55); flex: none;
+    }
+    .folder::before { content: ""; position: absolute; top: -0.9cqh; left: 0.8cqh; width: 3cqh; height: 1.4cqh; border-radius: 0.6cqh 0.6cqh 0 0; background: var(--accent); }
+    .head-title .k { color: var(--blue-2); font-size: 2cqh; font-weight: 700; letter-spacing: 0.01em; }
+    .head-title h2 { color: var(--navy); font-size: 4.2cqh; font-weight: 900; line-height: 1.03; letter-spacing: -0.01em; }
+    .head-title .sub { margin-top: 0.7cqh; color: var(--muted); font-size: 1.9cqh; font-weight: 600; }
+
+    .body-area { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .lead-p { color: #40506a; font-size: 1.95cqh; line-height: 1.6; margin-bottom: 2.4cqh; flex: none; max-width: 54em; }
+    .lead-p b { color: var(--blue-2); font-weight: 800; }
+
+    /* ---------- metric cards ---------- */
+    .metrics { display: grid; gap: 1.3cqw; margin-bottom: 2.8cqh; flex: none; }
+    .metrics.c3 { grid-template-columns: repeat(3, 1fr); }
+    .metrics.c4 { grid-template-columns: repeat(4, 1fr); }
+    .metrics.c5 { grid-template-columns: repeat(5, 1fr); }
+    .mcard { border: 1px solid var(--line); border-radius: 1.4cqh; background: rgba(255, 255, 255, 0.74); box-shadow: 0 8px 22px rgba(45, 82, 115, 0.09); padding: 2.2cqh 1.3cqw; text-align: center; min-width: 0; }
+    .mcard strong { display: block; color: var(--blue-2); font-size: 2.8cqh; font-weight: 900; line-height: 1.05; overflow-wrap: anywhere; }
+    .mcard span { display: block; margin-top: 0.8cqh; color: var(--navy); font-size: 1.8cqh; font-weight: 800; }
+    .mcard small { display: block; margin-top: 0.4cqh; color: var(--muted); font-size: 1.7cqh; line-height: 1.35; }
+
+    /* ---------- columns / panels ---------- */
+    .cols { display: grid; gap: 1.8cqw; flex: 1; min-height: 0; align-items: stretch; }
+    .cols.two { grid-template-columns: 1fr 1fr; }
+    .cols.wt { grid-template-columns: 0.86fr 1.14fr; }
+    .stack { display: flex; flex-direction: column; min-height: 0; gap: 1.6cqh; }
+    .stack.center { justify-content: center; }
+    .panel { border: 1px solid var(--line); border-radius: 1.5cqh; background: var(--card); box-shadow: 0 10px 26px rgba(45, 82, 115, 0.09); padding: 2.4cqh 1.7cqw; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+    .panel h3 { color: var(--navy); font-size: 2.2cqh; font-weight: 800; margin-bottom: 1.3cqh; flex: none; }
+    .panel p { color: #45526a; font-size: var(--ft, 1.85cqh); line-height: 1.62; }
+    .divider { height: 1px; background: var(--line); margin: 1.55cqh 0; flex: none; }
+    .sub-label { color: var(--blue-2); font-size: 1.7cqh; font-weight: 800; margin-bottom: 1cqh; flex: none; }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.7cqh 0.55cqw; }
+    .chips span { display: inline-flex; align-items: center; padding: 0.6cqh 0.75cqw; border: 1px solid rgba(83, 105, 135, 0.24); border-radius: 999px; background: rgba(255, 255, 255, 0.7); color: #29334a; font-size: 1.7cqh; font-weight: 700; }
+
+    /* ---------- image placeholder (guide label toggled by --guide-display) ---------- */
+    .figure { display: flex; flex-direction: column; min-height: 0; }
+    .figure.fill { flex: 1; }
+    .figure .shot { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; margin: auto; border-radius: 1.2cqh; border: 1px solid rgba(89, 114, 145, 0.2); box-shadow: 0 16px 38px rgba(37, 78, 119, 0.22); }
+    .ph { width: 100%; height: 100%; min-height: 12cqh; border-radius: 1.2cqh; border: 1px solid var(--line); background: linear-gradient(140deg, rgba(231, 240, 250, 0.75), rgba(238, 235, 251, 0.75)); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6); }
+    .ph span { color: #8794ab; font-size: 1.7cqh; font-weight: 600; display: var(--guide-display, block); }
+    .figcap { margin-top: 1cqh; color: var(--muted); font-size: 1.58cqh; font-weight: 600; line-height: 1.45; text-align: center; flex: none; }
+    .figcap.left { text-align: left; }
+    .tcap { color: var(--navy); font-size: 1.75cqh; font-weight: 800; margin-bottom: 1.1cqh; flex: none; }
+
+    /* ---------- tables ---------- */
+    .table-block { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+    .table-card { border: 1px solid var(--line); border-radius: 1.2cqh; background: rgba(255, 255, 255, 0.82); box-shadow: 0 10px 26px rgba(45, 82, 115, 0.1); overflow: hidden; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--tf, 1.7cqh); }
+    th, td { padding: 1.5cqh 1.15cqw; text-align: center; vertical-align: middle; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+    thead th { border-top: none; color: var(--navy); background: rgba(241, 202, 122, 0.34); font-weight: 800; font-size: var(--tf, 1.7cqh); letter-spacing: 0.01em; }
+    tbody tr:nth-child(even) td { background: rgba(233, 241, 249, 0.6); }
+    table.compact th, table.compact td { padding: 1.12cqh 1cqw; }
+    .up { color: var(--blue-2); font-weight: 800; }
+    .down { color: #0f6b3a; font-weight: 800; }
+
+    /* ---------- trace (문제/해결/결과) ---------- */
+    .trace { display: grid; gap: 1.1cqh; }
+    .trace.lg { gap: 1.7cqh; }
+    .trace-row { display: grid; grid-template-columns: auto 1fr; gap: 0.9cqw; align-items: baseline; }
+    .trace-row .tk { color: #fff; font-size: 1.7cqh; font-weight: 800; padding: 0.55cqh 0.9cqw; border-radius: 0.6cqh; white-space: nowrap; }
+    .trace-row .tk.p { background: #a8580a; }
+    .trace-row .tk.s { background: var(--accent); }
+    .trace-row .tk.r { background: #0b7285; }
+    .trace-row .tx { color: #45526a; font-size: 1.86cqh; line-height: 1.5; }
+    .trace-row .tx b { color: var(--blue-2); font-weight: 800; }
+
+    /* ---------- concerns (troubleshooting) ---------- */
+    .concerns { display: grid; grid-template-columns: 1fr; grid-auto-rows: 1fr; gap: 1.4cqh; flex: 1; min-height: 0; }
+    .concern { position: relative; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 0.9cqh; background: rgba(255, 255, 255, 0.7); padding: 1.8cqh 1.5cqw; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+    .concern.wide { grid-column: 1 / -1; }
+    .concern .n { color: var(--blue-2); font-size: 1.5cqh; font-weight: 900; letter-spacing: 0.08em; }
+    .concern h3 { color: var(--navy); font-size: 1.98cqh; font-weight: 800; margin: 0.2cqh 0 0.6cqh; }
+    .concern p { color: #47556c; font-size: 1.62cqh; line-height: 1.5; }
+    .concern b { color: var(--blue-2); font-weight: 800; }
+
+    /* ---------- bullet + experience list ---------- */
+    .blist { list-style: none; padding: 0; margin: 0; display: grid; gap: 1cqh; }
+    .blist li { position: relative; padding-left: 1.3cqw; color: #45526a; font-size: 1.74cqh; line-height: 1.5; }
+    .blist li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 0.75cqh; height: 0.75cqh; border-radius: 999px; background: var(--teal); }
+    .blist li b { color: var(--blue-2); }
+    /* 문제/해결/결과를 줄 앞에 붙이는 인라인 칩 — .trace 와 달리 행을 새로 만들지 않는다 */
+    .blist li .mk, .sub-label .mk, .lead-p .mk { display: inline-block; margin-right: 0.45cqw; padding: 0.1cqh 0.5cqw; border-radius: 0.5cqh; color: #fff; font-size: 1.7cqh; font-weight: 800; vertical-align: 0.1em; }
+    .mk.p { background: #a8580a; }
+    .mk.s { background: var(--accent); }
+    .mk.r { background: #0b7285; }
+    .xp { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; justify-content: center; flex: 1; min-height: 0; }
+    .xp > li { padding: 1.9cqh 0; border-top: 1px solid var(--line); }
+    .xp > li:first-child { border-top: none; padding-top: 0; }
+    .xp > li:last-child { padding-bottom: 0; }
+    .xp .xh { display: flex; align-items: baseline; gap: 0.8cqw; margin-bottom: 0.7cqh; }
+    .xp .xh h3 { color: var(--navy); font-size: 2.1cqh; font-weight: 800; margin: 0; }
+    .xp .xh .yr { color: var(--muted); font-size: 1.5cqh; font-weight: 700; }
+    .xp p { color: #45526a; font-size: 1.68cqh; line-height: 1.54; margin: 0; }
+    .xp p b { color: var(--blue-2); font-weight: 800; }
+
+    /* ---------- TOC ---------- */
+    .toc { display: grid; grid-template-columns: 1.46fr 0.54fr; gap: 1.8cqw; flex: 1; min-height: 0; }
+    .toc-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2cqh 1.3cqw; align-content: center; }
+    .toc-item { display: flex; align-items: center; gap: 1cqw; border: 1px solid var(--line); border-radius: 1.3cqh; background: rgba(255, 255, 255, 0.72); padding: var(--tp, 3.2cqh) 1.2cqw; box-shadow: 0 12px 30px -20px rgba(45, 82, 115, 0.4); }
+    .toc-item .no { color: var(--blue-2); font-size: 2.8cqh; font-weight: 900; letter-spacing: -0.02em; min-width: 7.6cqw; flex: none; }
+    /* 목차를 프로젝트 2묶음으로 — 기존 2열 그리드의 각 칸이 묶음 하나 */
+    .toc-group { display: flex; flex-direction: column; gap: 1.6cqh; min-width: 0; }
+    .toc-group .gh { display: flex; align-items: baseline; gap: 0.9cqw; padding: 0 0.3cqw 0.7cqh; border-bottom: 2px solid var(--accent); }
+    .toc-group .gt { color: var(--navy); font-size: 3cqh; font-weight: 900; letter-spacing: -0.01em; }
+    .toc-group .gr { margin-left: auto; color: var(--muted); font-size: 1.62cqh; font-weight: 700; }
+    .toc-item .tt { color: var(--navy); font-size: 2.45cqh; font-weight: 700; }
+    /* 하위 슬라이드를 작은 줄로 달아 카드마다 위계를 준다 — 카드가 전부 같은 무게면 훑어야 읽힌다 */
+    .toc-item .tt em { display: block; margin-top: 0.5cqh; color: var(--muted); font: 600 1.72cqh/1.4 inherit; font-style: normal; white-space: nowrap; }
+    .about-card { border-radius: 1.6cqh; background: linear-gradient(150deg, var(--accent), #1747c9); color: #fff; padding: 2.8cqh 1.9cqw; display: flex; flex-direction: column; justify-content: center; gap: 3.4cqh; box-shadow: 0 24px 54px -30px rgba(29, 87, 207, 0.6); }
+    .about-card .k { font-size: 1.7cqh; font-weight: 800; letter-spacing: 0.12em; color: rgba(255,255,255,0.92); }
+    .about-card p { font-size: var(--ft, 2cqh); line-height: 1.6; font-weight: 500; word-break: keep-all; }
+    .about-card .meta { font-size: 1.7cqh; line-height: 1.7; color: rgba(255,255,255,0.82); font-weight: 600; }
+
+    /* ---------- timeline ---------- */
+    .tl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4cqw; flex: 1; min-height: 0; }
+    .tl-card { border: 1px solid var(--line); border-radius: 1.5cqh; background: rgba(255, 255, 255, 0.74); padding: 2.2cqh 1.5cqw; display: flex; flex-direction: column; gap: 1cqh; box-shadow: 0 14px 34px -24px rgba(45, 82, 115, 0.5); }
+    .tl-card.accent { background: linear-gradient(150deg, var(--accent), #1747c9); }
+    .tl-head { display: flex; align-items: center; gap: 0.9cqw; }
+    .tl-dot { width: 1.3cqh; height: 1.3cqh; border-radius: 999px; background: var(--accent); flex: none; }
+    .tl-card.accent .tl-dot { background: #fff; }
+    .tl-card .per { color: var(--blue-2); font-size: 1.7cqh; font-weight: 800; }
+    .tl-card h3 { color: var(--navy); font-size: 2.5cqh; font-weight: 800; }
+    .tl-card .role { color: var(--muted); font-size: 1.55cqh; font-weight: 600; }
+    .tl-card p { color: #45526a; font-size: 1.68cqh; line-height: 1.55; }
+    .tl-metric { margin-top: auto; padding-top: 1.3cqh; border-top: 1px solid var(--line); display: flex; align-items: baseline; gap: 0.8cqw; }
+    .tl-metric b { color: var(--navy); font-size: 2.7cqh; font-weight: 900; }
+    .tl-metric span { color: var(--muted); font-size: 1.45cqh; }
+    .tl-card.accent .per, .tl-card.accent h3, .tl-card.accent .role, .tl-card.accent p, .tl-metric span, .tl-card.accent .tl-metric b { color: #fff; }
+    .tl-card.accent .role, .tl-card.accent p, .tl-card.accent .per { color: rgba(255,255,255,0.85); }
+    .tl-card.accent .tl-metric { border-top-color: rgba(255,255,255,0.28); }
+    .tl-card.accent .tl-metric span { color: rgba(255,255,255,0.78); }
+
+    /* ---------- project cards ---------- */
+    .pj { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4cqw; flex: 1; min-height: 0; }
+    .pj-card { border: 1px solid var(--line); border-radius: 1.5cqh; background: rgba(255, 255, 255, 0.74); padding: 1.4cqh 1.4cqw 1.6cqh; display: flex; flex-direction: column; gap: 1.2cqh; box-shadow: 0 14px 34px -24px rgba(45, 82, 115, 0.5); }
+    .pj-thumb { height: 24cqh; border-radius: 1.2cqh; border: 1px solid var(--line); background: linear-gradient(140deg, #eaf0fb, #f0eefb); display: flex; align-items: center; justify-content: center; flex: none; }
+    .pj-thumb span { color: #8794ab; font-size: 1.5cqh; font-weight: 600; display: var(--guide-display, block); }
+    .pj-card .meta { color: var(--muted); font-size: 1.5cqh; font-weight: 600; }
+    .pj-card h3 { color: var(--navy); font-size: 2.3cqh; font-weight: 800; }
+    .pj-card p { color: #45526a; font-size: 1.6cqh; line-height: 1.5; }
+    .pj-card .chips { margin-top: auto; }
+
+    /* ===================== COVER ===================== */
+    .cover .pad { align-items: center; justify-content: center; }
+    .cover .top-name { position: absolute; top: 4.8cqh; right: 5cqw; color: #4a5670; font-size: 1.85cqh; font-weight: 600; z-index: 2; }
+    .cover-card { position: relative; width: min(84cqw, 100%); border: 1px solid var(--line); border-radius: 2cqh; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(12px); box-shadow: 0 28px 80px rgba(37, 78, 119, 0.18); padding: 6cqh 4.6cqw; overflow: hidden; }
+    .cover-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), transparent 40%), radial-gradient(circle at 72% 12%, rgba(36, 107, 255, 0.14), transparent 42%); }
+    .cover-card > * { position: relative; }
+    .cover .eyebrow { color: #4a5670; font-size: 1.7cqh; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; margin: 0 0 2.4cqh; }
+    .cover h1 { color: #2b3348; font-size: 9cqh; font-weight: 900; line-height: 0.96; }
+    .cover h1 .en { display: block; color: #5b6a86; font-size: 0.34em; font-weight: 800; font-style: italic; letter-spacing: 0.05em; margin-top: 0.42em; }
+    .cover .subtitle { color: #556176; font-size: 2.4cqh; font-weight: 600; margin: 1.8cqh 0 3.4cqh; }
+    .cover .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4cqw; margin-bottom: 3cqh; }
+    .cover .mc { border: 1px solid var(--line); border-radius: 1.3cqh; background: rgba(255, 255, 255, 0.72); box-shadow: 0 8px 22px rgba(45, 82, 115, 0.1); padding: 2.6cqh 1.4cqw; }
+    .cover .mc strong { display: block; color: var(--blue-2); font-size: 2.9cqh; font-weight: 900; line-height: 1.05; }
+    .cover .mc span { display: block; margin-top: 0.9cqh; color: var(--navy); font-size: 1.7cqh; font-weight: 800; }
+    .cover .mc small { display: block; margin-top: 0.4cqh; color: var(--muted); font-size: 1.7cqh; line-height: 1.35; }
+    .cover .contact-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4cqw; padding-top: 2.6cqh; border-top: 1px solid var(--line); }
+    .cover .contact-row .l { color: var(--navy); font-size: 1.7cqh; font-weight: 800; }
+    .cover .contact-row .v { color: #46536a; font-size: 1.75cqh; margin-top: 0.4cqh; }
+
+    /* ===================== CLOSING ===================== */
+    .closing .pad { align-items: center; justify-content: center; text-align: center; }
+    .closing h1 { color: #24417a; font-size: 10.5cqh; font-weight: 900; font-style: italic; letter-spacing: 0.02em; }
+    .closing .ty-sub { color: var(--navy); font-size: 2.7cqh; font-weight: 800; margin-top: 1.2cqh; }
+    .closing .cc { margin-top: 4.2cqh; display: grid; gap: 1.3cqh; justify-content: center; font-size: 2.1cqh; color: #37455e; }
+    .closing .cc div { display: flex; gap: 1cqw; align-items: baseline; }
+    .closing .cc b { color: var(--blue-2); min-width: 7cqw; text-align: right; font-weight: 700; }
+    .closing .end-name { position: absolute; bottom: 4.4cqh; left: 0; right: 0; text-align: center; color: #4a5670; font-size: 1.85cqh; }
+
+    /* ===================== ADDED · 코드 블록 ===================== */
+    .code { border-radius: 1.1cqh; border: 1px solid rgba(30,50,90,0.28); background: #0f1b2f; box-shadow: 0 12px 30px rgba(20,45,80,0.26); overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+    .code .code-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.8cqw; padding: 0.95cqh 1.1cqw; background: rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.1); flex: none; }
+    .code .code-head .f { color: #7fd0e8; font: 700 1.42cqh/1.2 ui-monospace, "SF Mono", Menlo, monospace; }
+    .code .code-head .t { color: #8fa3c4; font-size: 1.32cqh; font-weight: 700; }
+    .code pre { margin: 0; padding: 0.95cqh 1.1cqw; overflow: hidden; flex: 1; min-height: 0; }
+    .code code { display: block; background: none; padding: 0; border-radius: 0; color: #d7e3f5; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 1.42cqh; line-height: 1.58; white-space: pre; }
+    .code .k { color: #79b8ff; font-weight: 700; }   /* 키워드 */
+    .code .s { color: #9ae6a0; }                      /* 문자열 */
+    .code .c { color: #6b7f9e; font-style: italic; }  /* 주석 */
+    .code .n { color: #f0b072; }                      /* 숫자·상수 */
+    .code .hi { background: rgba(121,184,255,0.16); display: block; margin: 0 -1.1cqw; padding: 0 1.1cqw; }
+
+    /* ===================== ADDED · 인라인 SVG 그림 ===================== */
+    .svgfig { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+    .svgfig svg { display: block; width: 100%; height: auto; max-height: 100%; }
+    .svgfig .node { fill: rgba(255,255,255,0.86); stroke: #7d90ad; stroke-width: 1.4; }
+    .svgfig .node-a { fill: rgba(36,107,255,0.12); stroke: #246bff; stroke-width: 1.5; }
+    .svgfig .node-s { fill: rgba(17,148,168,0.13); stroke: #1194a8; stroke-width: 1.5; }
+    .svgfig .node-w { fill: rgba(224,138,43,0.14); stroke: #e08a2b; stroke-width: 1.5; }
+    .svgfig .node-g { fill: rgba(23,134,74,0.12); stroke: #17864a; stroke-width: 1.5; }
+    .svgfig .grp { fill: none; stroke: #93a5bd; stroke-width: 1.2; stroke-dasharray: 6 4; }
+    .svgfig .lbl { fill: #233150; font: 700 var(--fs-l, 15px) Pretendard, system-ui, sans-serif; text-anchor: middle; }
+    .svgfig .lbl-s { fill: #3d4a63; font: 600 var(--fs, 12.5px) Pretendard, system-ui, sans-serif; text-anchor: middle; }
+    .svgfig .lbl-l { fill: #3d4a63; font: 600 var(--fs, 12.5px) Pretendard, system-ui, sans-serif; text-anchor: start; }
+    .svgfig .edge { stroke: #8397b2; stroke-width: 1.5; fill: none; }
+    .svgfig .edge-a { stroke: #246bff; stroke-width: 2; fill: none; }
+    .svgfig .edge-d { stroke: #8397b2; stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
+
+    /* ===================== ADDED · 보조 레이아웃 ===================== */
+    .cols.tw { grid-template-columns: 1.14fr 0.86fr; }
+    .cols.three { grid-template-columns: repeat(3, 1fr); }
+    .panel.tight { padding: 1.7cqh 1.3cqw; }
+    .panel.dark { background: linear-gradient(150deg, #223a63, #17284a); border-color: rgba(255,255,255,0.14); }
+    .panel.dark h3, .panel.dark p { color: #e6eefb; }
+    .panel.dark .sub-label { color: #7fd0e8; }
+    .panel.dark code { color: #cfe0ff; background: rgba(255,255,255,0.12); }
+
+    /* ---------- 단계 카드 · 자원 칸 (스레드 사용) ---------- */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3cqw; flex: none; margin-bottom: 1.6cqh; }
+    .step { border: 1px solid var(--line); border-radius: 1.2cqh; background: rgba(255, 255, 255, 0.78); padding: 1.5cqh 1.2cqw; min-width: 0; }
+    .step .n { color: var(--blue-2); font-size: 1.7cqh; font-weight: 900; letter-spacing: 0.12em; }
+    .step h3 { color: var(--navy); font-size: 1.9cqh; font-weight: 800; margin: 0.3cqh 0 0.5cqh; }
+    .step p { color: #47556c; font-size: 1.5cqh; line-height: 1.45; }
+    .step b { color: var(--blue-2); font-weight: 800; }
+    .pools { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 0.9cqw; flex: none; }
+    .pools .arr { align-self: center; color: #4a5670; font-size: 2.4cqh; }
+    .pool { border: 1px solid var(--line); border-radius: 1.4cqh; background: rgba(255, 255, 255, 0.82); box-shadow: 0 8px 22px rgba(45, 82, 115, 0.08); padding: 1.7cqh 1.3cqw; display: flex; flex-direction: column; gap: 0.9cqh; min-width: 0; }
+    .pool h3 { color: var(--navy); font-size: 2.1cqh; font-weight: 800; }
+    .pool .d { color: var(--muted); font-size: 1.7cqh; line-height: 1.4; }
+    .pool .tag { align-self: flex-start; background: rgba(233, 241, 249, 0.95); color: #2b3852; font-size: 1.7cqh; font-weight: 700; padding: 0.5cqh 0.7cqw; border-radius: 0.6cqh; }
+    .pool .tag.a { background: rgba(36, 107, 255, 0.1); color: var(--blue-2); }
+    .slots { display: grid; grid-template-columns: repeat(10, 1fr); gap: 0.35cqw; }
+    .slot { aspect-ratio: 1.3; border-radius: 0.45cqh; border: 1.5px dashed #b9c6d8; }
+    .slot.on { background: var(--accent); border: none; }
+    .slot.wait { background: #aab5c5; border: none; }
+    .legend { display: flex; flex-wrap: wrap; gap: 0.4cqh 1.4cqw; color: var(--muted); font-size: 1.7cqh; margin: 0.9cqh 0 1.4cqh; flex: none; }
+    .legend i { display: inline-block; width: 1.1cqh; height: 1.1cqh; border-radius: 0.25cqh; margin-right: 0.35cqw; vertical-align: -0.1cqh; }
+    .legend b { color: #2b3852; font-weight: 800; }
+    .flow { border: 1px solid var(--line); border-radius: 1.4cqh; background: rgba(255, 255, 255, 0.78); padding: 1.5cqh 1.3cqw; flex: none; }
+    .flow .cap { color: var(--navy); font-size: 1.7cqh; font-weight: 700; margin-bottom: 1cqh; }
+    .flow-row { display: flex; align-items: center; gap: 0.4cqw; }
+    .flow-row .st { flex: 1; text-align: center; border: 1.5px solid #b9c6d8; border-radius: 0.8cqh; padding: 1.05cqh 0.4cqw; font-size: 1.7cqh; font-weight: 700; color: var(--navy); background: #fff; }
+    .flow-row .st.a { background: rgba(36, 107, 255, 0.1); border-color: var(--accent); color: var(--blue-2); }
+    .flow-row .sep { color: #4a5670; font-size: 1.7cqh; }
+    .flow-under { display: grid; gap: 1.2cqw; margin-top: 0.7cqh; }
+    .flow-under div { border-top: 2px solid #9aa9bd; padding-top: 0.5cqh; text-align: center; font-size: 1.7cqh; font-weight: 700; color: var(--muted); }
+    .flow-under div.a { border-color: var(--accent); color: var(--blue-2); }
+
+    /* ---------- 단계별 막대 ---------- */
+    .bars { display: flex; flex-direction: column; justify-content: center; gap: 2.4cqh; flex: 1; }
+    .bar-row { display: grid; grid-template-columns: 7.5cqw 1fr 5.2cqw; align-items: center; gap: 1cqw; }
+    .bar-row .l { color: var(--navy); font-size: 1.6cqh; font-weight: 800; }
+    .bar-row .track { height: 3cqh; background: rgba(214, 224, 236, 0.6); border-radius: 0.6cqh; overflow: hidden; }
+    .bar-row .fill { height: 100%; background: #a7b6d6; border-radius: 0.6cqh; }
+    .bar-row .fill.a { background: var(--accent); }
+    .bar-row .v { text-align: right; color: var(--navy); font-size: 1.8cqh; font-weight: 800; }
+    .bar-row .v.a { color: var(--blue-2); }
+    .bars.lg { gap: 6.5cqh; }
+    .bars.lg .bar-row .l { font-size: 2.4cqh; }
+    .bars.lg .bar-row .track { height: 6.2cqh; }
+    .bars.lg .bar-row .v { font-size: 2.9cqh; }
+    table.nowrap th, table.nowrap td { white-space: nowrap; }
+    table.tight-cells th, table.tight-cells td { padding: 1.05cqh 0.55cqw; }
+    tr.pick td { background: rgba(36, 107, 255, 0.08) !important; color: var(--blue-2); font-weight: 800; border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent); }
+    /* 칸 높이만큼 표를 늘린다 - 행 높이가 남는 세로 공간을 나눠 갖는다 */
+    .table-card.fill { flex: 1; min-height: 0; }
+    .table-card.fill table { height: 100%; }
+    .metrics.lg .mcard { padding: 3cqh 1.3cqw; }
+    .metrics.lg .mcard strong { font-size: 3.7cqh; }
+    .metrics.lg .mcard span { font-size: 2.05cqh; margin-top: 1cqh; }
+    .metrics.lg .mcard small { font-size: 1.7cqh; }
+    .pool .tag { margin-top: auto; }
+    .steps.lg .step { padding: 2cqh 1.3cqw; }
+    .steps.lg .step h3 { font-size: 2.2cqh; }
+    .steps.lg .step p { font-size: 1.72cqh; line-height: 1.5; }
+    .pools.grow { flex: 1; min-height: 0; }
+    .pools.grow .pool h3 { font-size: 2.35cqh; }
+    .pools.grow .pool .d { font-size: 1.7cqh; }
+    .pools.grow .pool .tag { font-size: 1.7cqh; }
+    .flow.lg .cap { font-size: 1.7cqh; }
+    .flow.lg .flow-row .st { padding: 1.6cqh 0.3cqw; font-size: 1.7cqh; white-space: nowrap; }
+    .flow.lg .flow-under div { font-size: 1.7cqh; }
+    .blist.lg li { font-size: 2.05cqh; line-height: 1.6; margin-bottom: 1.2cqh; }
+    .foot { color: var(--muted); font-size: 1.32cqh; line-height: 1.45; margin-top: 0.9cqh; flex: none; }
+
+    /* ---------- 터미널 원문 · 선택/트레이드오프 ---------- */
+    .term { background: #0d1117; border-radius: 1cqh; padding: 1.3cqh 1cqw; overflow: hidden; }
+    .term pre { margin: 0; color: #c9d1d9; font: 500 1.16cqh/1.42 "JetBrains Mono", ui-monospace, Menlo, monospace; white-space: pre; }
+    .term .ring { outline: 1.5px solid #ff5a5a; border-radius: 0.4cqh; }
+    .term .ring.y { outline-color: #f2cc60; }
+    .callout { border: 1px solid var(--line); border-radius: 1.3cqh; background: rgba(255, 255, 255, 0.85); padding: 1.5cqh 1.3cqw; display: grid; gap: 1.2cqh; flex: none; }
+    .callout .row { display: grid; grid-template-columns: auto 1fr; gap: 1cqw; align-items: baseline; }
+    .callout .t { color: #fff; font-size: 1.7cqh; font-weight: 800; padding: 0.5cqh 0.8cqw; border-radius: 0.6cqh; background: var(--accent); white-space: nowrap; }
+    .callout .t.g { background: var(--green); }
+    .callout p { color: #45526a; font-size: var(--ft, 1.7cqh); line-height: 1.55; }
+    .callout b { color: var(--blue-2); font-weight: 800; }
+
+    /* ===================== print: 슬라이드 1장 = PDF 1쪽 ===================== */
+    @media print {
+      @page { size: 1280px 720px; margin: 0; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      html, body { display: block; height: auto; overflow: visible; background: none; }
+      .rail { display: none; }
+      .viewport { display: block; overflow: visible; background: none; }
+      .stage { transform: none !important; height: auto; border-radius: 0; box-shadow: none; overflow: visible; }
+      .slide { position: relative; height: 720px; opacity: 1; visibility: visible; transition: none; break-after: page; }
+      .slide:last-child { break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="rail" id="rail" aria-label="슬라이드 미리보기">
+    <div class="rail-title">Slides · 미리보기</div>
+    <!-- 썸네일은 JS가 각 슬라이드를 축소 복제해 채운다 -->
+    <button class="rail-btn" id="guideToggle" type="button">가이드 숨기기</button>
+  </aside>
+
+  <main class="viewport" id="viewport">
+    <div class="stage" id="stage">
+
+      <!-- 01 · COVER ------------------------------------------------------- -->
+      <section class="slide cover" data-label="표지" data-screen-label="01"
+        data-speaker-notes="표지: 카드 1 · 2 의 수치는 본문 슬라이드에서 같은 값으로 다시 증명되고, 카드 3 의 구조는 19 에서 그림으로 보인다. 7.85초는 3회 중앙값.">
+        <span class="top-name">김민성 · Minsung Kim</span>
+        <div class="pad">
+          <div class="cover-card">
+            <div class="eyebrow">Backend Engineer · Portfolio</div>
+            <h1>김민성<span class="en">MINSUNG KIM</span></h1>
+            <p class="subtitle">요청이 몰리는 구간에서 <b>처리량 · 스레드 자원 · 장애 복구</b>를 함께 지키는 서버를 설계합니다.</p>
+            <div class="metric-grid">
+              <div class="mc"><strong>대용량 처리</strong><span>505 → 2,000 RPS</span><small>재고 1만 개에 초당 2,000건 선착순 요청 — 초과 · 중복 발급 0, 발급 p95 32.3초 → 118ms<br />재고 행 잠금(505 RPS) → Redis 판정 선행 · Kafka 비동기 확정 · DB 커넥션 최대 4개(인증 제외)</small></div>
+              <div class="mc"><strong>고가용성</strong><span>Master 장애 → 7.85초 쓰기 재개</span><small>Redis 단일 노드(단일 장애점) → 채팅 세션만 Cluster 이중화 · 장애 판정 5초 + 자동 승격<br />PG 승인 뒤 DB 실패 200건 → 보상 배치가 사람 개입 없이 취소(p95 98.5초)</small></div>
+              <div class="mc"><strong>AI 품질 검증</strong><span>리뷰 · 검증 · 보고서 역할 분리</span><small>현장 요구사항 파악 · 리서치로 더 나은 개발 옵션 제시<br />구현 코드는 AI 하네스로 로직 · 설계 검토 → 테스트 기반 검증 → 품질 보고서 정리</small></div>
+            </div>
+            <div class="contact-row">
+              <div><div class="l">Phone</div><div class="v">010-8976-2340</div></div>
+              <div><div class="l">Email</div><div class="v">mskim.bm@gmail.com</div></div>
+              <div><div class="l">GitHub</div><div class="v">github.com/mskim98</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 · CONTENTS ---------------------------------------------------- -->
+      <section class="slide" data-label="목차" data-screen-label="02"
+        data-speaker-notes="목차: 두 프로젝트를 각각 '개요 → 설계 주제 → 측정' 순으로 편다.">
+        <span class="watermark">김민성 · Minsung Kim</span>
+        <div class="pad">
+          <div class="head">
+            <div class="folder">i</div>
+            <div class="head-title"><div class="k">Contents</div><h2>목차</h2>
+              <div class="sub">팀 프로젝트 2건 · 백엔드 리드 · 이커머스 10장(03–12) · AI 튜터링 6장(13–18) · AI 하네스(19)</div></div>
+          </div>
+          <div class="toc">
+            <div class="toc-list" style="--tp:2.2cqh">
+              <div class="toc-group">
+                <div class="gh"><span class="gt">이커머스 백엔드</span></div>
+                <div class="toc-item"><span class="no">pg.03</span><span class="tt">구조와 부하 지점<em>도메인 구성 · 요청이 몰리는 자리</em></span></div>
+                <div class="toc-item"><span class="no">pg.04–09</span><span class="tt">쿠폰 발급<em>시퀀스 · 접근 · 결과 · 튜닝 · 폴백</em></span></div>
+                <div class="toc-item"><span class="no">pg.10–12</span><span class="tt">결제<em>시퀀스 · 파이프라인 · 보상</em></span></div>
+              </div>
+              <div class="toc-group">
+                <div class="gh"><span class="gt">AI 튜터링</span></div>
+                <div class="toc-item"><span class="no">pg.13</span><span class="tt">구조와 응답 경로<em>저장소 분리 · 스트리밍 전달 경로</em></span></div>
+                <div class="toc-item"><span class="no">pg.14–17</span><span class="tt">실시간 스트리밍<em>시퀀스 · 스레드 모델 · 오프로딩 · 서킷</em></span></div>
+                <div class="toc-item"><span class="no">pg.18</span><span class="tt">세션 저장소<em>Cluster 이중화 · 읽기 분산</em></span></div>
+              </div>
+              <div class="toc-group" style="grid-column:1 / -1">
+                <div class="gh"><span class="gt">개발 방식</span></div>
+                <div class="toc-item"><span class="no">pg.19</span><span class="tt">AI 하네스<em>코드 리뷰어 · 검증기 · 보고서 생성기 역할 분리</em></span></div>
+              </div>
+            </div>
+            <div class="about-card" style="--ft:2.8cqh">
+              <div class="k">ABOUT ME</div>
+              <p>두 팀 프로젝트 모두 <b>백엔드 리드</b>로 참여해, 동시성·외부 연동·실시간 전송처럼 <b>실패가 데이터에 남는 경로</b>를 맡았습니다. 선택한 구조마다 부하 측정으로 근거를 남겼습니다.</p>
+              <div class="meta" style="font-size:1.95cqh">이커머스 백엔드 · 4인 팀 팀장<br />(2025-10 ~ 2025-12)<br />AI 튜터링 · 9인 팀 백엔드 리드<br />(2025-12 ~ 2026-03)</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+<section class="slide" data-label="이커머스 개요" data-screen-label="03" data-speaker-notes="4인 팀 백엔드 리드로 참여한 이커머스 서비스의 구조와 담당 범위">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">03</div>
+      <div class="head-title"><div class="k">이커머스 · Overview</div><h2>이커머스 백엔드</h2>
+        <div class="sub">2025-10 ~ 2025-12 · 4인 팀 팀장 / 백엔드 리드</div></div>
+    </div>
+    <div class="body-area">
+      <p class="lead-p">한정 수량 쿠폰 발급과 결제(승인 · 보상)를 다루는 이커머스 백엔드. <b>쿠폰 발급 · 결제 두 갈래</b>를 설계 · 구현 전 구간에서 담당 (4인 팀 팀장 · 백엔드 리드, 도메인 모델링 · 동시성 제어 · 결제 연동 · 부하 테스트 주도).</p>
+      <div class="chips" style="margin-bottom:1.6cqh">
+        <span>Spring</span><span>JPA</span><span>PostgreSQL</span><span>Redis</span><span>Lua</span><span>Redisson</span><span>Kafka</span><span>Resilience4j</span><span>Docker</span><span>Nginx</span><span>k6</span><span>Grafana</span>
+      </div>
+      <div class="svgfig">
+        <svg viewBox="0 0 1200 430" xmlns="http://www.w3.org/2000/svg" style="--fs:13px">
+            <defs>
+            <marker id="ec-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+            <marker id="ec-arr-d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e08a2b"/></marker>
+            </defs>
+            <rect class="grp" x="180" y="30" width="700" height="380" rx="14"/>
+            <g transform="translate(192,11) scale(0.85)"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.184-.186h-2.12a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z" fill="#2496ED"/></g>
+            <text class="lbl-l" x="218" y="26">Docker Compose · 단일 EC2 인스턴스</text>
+            <rect class="node" x="20" y="175" width="120" height="60" rx="10"/><text class="lbl" x="80" y="210">사용자</text>
+            <rect class="node-w" x="205" y="175" width="150" height="60" rx="10"/><g transform="translate(218,194.0) scale(0.9)"><path d="M12 0L1.605 6v12L12 24l10.395-6V6L12 0zm6 16.59c0 .705-.646 1.29-1.529 1.29-.631 0-1.351-.255-1.801-.81l-6-7.141v6.66c0 .721-.57 1.29-1.274 1.29H7.32c-.721 0-1.29-.6-1.29-1.29V7.41c0-.705.63-1.29 1.5-1.29.646 0 1.38.255 1.83.81l5.97 7.141V7.41c0-.721.6-1.29 1.29-1.29h.075c.72 0 1.29.6 1.29 1.29v9.18H18z" fill="#009639"/></g><text class="lbl" x="293" y="210">Nginx</text>
+            <rect class="node" x="205" y="285" width="150" height="60" rx="10"/><text class="lbl" x="280" y="320">Frontend</text>
+            <rect class="node-a" x="400" y="175" width="180" height="60" rx="10"/><g transform="translate(413,194.0) scale(0.9)"><path d="M21.8537 1.4158a10.4504 10.4504 0 0 1-1.284 2.2471A11.9666 11.9666 0 1 0 3.8518 20.7757l.4445.3951a11.9543 11.9543 0 0 0 19.6316-8.2971c.3457-3.0126-.568-6.8649-2.0743-11.458zM5.5805 20.8745a1.0174 1.0174 0 1 1-.1482-1.4323 1.0396 1.0396 0 0 1 .1482 1.4323zm16.1991-3.5806c-2.9385 3.9263-9.2601 2.5928-13.2852 2.7904 0 0-.7161.0494-1.4323.1481 0 0 .2717-.1234.6174-.2469 2.8398-.9877 4.1732-1.1853 5.9018-2.0743 3.2349-1.6545 6.4698-5.2844 7.1118-9.0379-1.2347 3.6053-4.9881 6.7167-8.3959 7.9761-2.3459.8643-6.5685 1.7039-6.5685 1.7039l-.1729-.0988c-2.8645-1.4076-2.9632-7.6304 2.2718-9.6306 2.2966-.889 4.4696-.395 6.9637-.9877 2.6422-.6174 5.7043-2.5929 6.939-5.1857 1.3828 4.1732 3.062 10.643.0493 14.6434z" fill="#6DB33F"/></g><text class="lbl" x="503" y="210">Spring Boot</text>
+            <rect class="node-s" x="630" y="60" width="160" height="60" rx="10"/><g transform="translate(643,79.0) scale(0.9)"><path d="M9.71 2.136a1.43 1.43 0 0 0-2.047 0h-.007a1.48 1.48 0 0 0-.421 1.042c0 .41.161.777.422 1.039l.007.007c.257.264.616.426 1.019.426.404 0 .766-.162 1.027-.426l.003-.007c.261-.262.421-.629.421-1.039 0-.408-.159-.777-.421-1.042H9.71zM8.683 22.295c.404 0 .766-.167 1.027-.429l.003-.008c.261-.261.421-.631.421-1.036 0-.41-.159-.778-.421-1.044H9.71a1.42 1.42 0 0 0-1.027-.432 1.4 1.4 0 0 0-1.02.432h-.007c-.26.266-.422.634-.422 1.044 0 .406.161.775.422 1.036l.007.008c.258.262.617.429 1.02.429zm7.89-4.462c.359-.096.683-.33.882-.684l.027-.052a1.47 1.47 0 0 0 .114-1.067 1.454 1.454 0 0 0-.675-.896l-.021-.014a1.425 1.425 0 0 0-1.078-.132c-.36.091-.684.335-.881.686-.2.349-.241.75-.146 1.119.099.363.33.691.675.896h.002c.346.203.737.239 1.101.144zm-6.405-7.342a2.083 2.083 0 0 0-1.485-.627c-.58 0-1.103.242-1.482.627-.378.385-.612.916-.612 1.507s.233 1.124.612 1.514a2.08 2.08 0 0 0 2.967 0c.379-.39.612-.923.612-1.514s-.233-1.122-.612-1.507zm-.835-2.51c.843.141 1.6.552 2.178 1.144h.004c.092.093.182.196.265.299l1.446-.851a3.176 3.176 0 0 1-.047-1.808 3.149 3.149 0 0 1 1.456-1.926l.025-.016a3.062 3.062 0 0 1 2.345-.306c.77.21 1.465.721 1.898 1.482v.002c.431.757.518 1.626.313 2.408a3.145 3.145 0 0 1-1.456 1.928l-.198.118h-.02a3.095 3.095 0 0 1-2.154.201 3.127 3.127 0 0 1-1.514-.944l-1.444.848a4.162 4.162 0 0 1 0 2.879l1.444.846c.413-.47.939-.789 1.514-.944a3.041 3.041 0 0 1 2.371.319l.048.023v.002a3.17 3.17 0 0 1 1.408 1.906 3.215 3.215 0 0 1-.313 2.405l-.026.053-.003-.005a3.147 3.147 0 0 1-1.867 1.436 3.096 3.096 0 0 1-2.371-.318v-.006a3.156 3.156 0 0 1-1.456-1.927 3.175 3.175 0 0 1 .047-1.805l-1.446-.848a3.905 3.905 0 0 1-.265.294l-.004.005a3.938 3.938 0 0 1-2.178 1.138v1.699a3.09 3.09 0 0 1 1.56.862l.002.004c.565.572.914 1.368.914 2.243 0 .873-.35 1.664-.914 2.239l-.002.009a3.1 3.1 0 0 1-2.21.931 3.1 3.1 0 0 1-2.206-.93h-.002v-.009a3.186 3.186 0 0 1-.916-2.239c0-.875.35-1.672.916-2.243v-.004h.002a3.1 3.1 0 0 1 1.558-.862v-1.699a3.926 3.926 0 0 1-2.176-1.138l-.006-.005a4.098 4.098 0 0 1-1.173-2.874c0-1.122.452-2.136 1.173-2.872h.006a3.947 3.947 0 0 1 2.176-1.144V6.289a3.137 3.137 0 0 1-1.558-.864h-.002v-.004a3.192 3.192 0 0 1-.916-2.243c0-.871.35-1.669.916-2.243l.002-.002A3.084 3.084 0 0 1 8.683 0c.861 0 1.641.355 2.21.932v.002h.002c.565.574.914 1.372.914 2.243 0 .876-.35 1.667-.914 2.243l-.002.005a3.142 3.142 0 0 1-1.56.864v1.692zm8.121-1.129l-.012-.019a1.452 1.452 0 0 0-.87-.668 1.43 1.43 0 0 0-1.103.146h.002c-.347.2-.58.529-.677.896-.095.365-.054.768.146 1.119l.007.009c.2.347.519.579.874.673.357.103.755.059 1.098-.144l.019-.009a1.47 1.47 0 0 0 .657-.885 1.493 1.493 0 0 0-.141-1.118" fill="#231F20"/></g><text class="lbl" x="723" y="95">Kafka</text>
+            <rect class="node-s" x="630" y="175" width="160" height="60" rx="10"/><g transform="translate(643,194.0) scale(0.9)"><path d="M22.71 13.145c-1.66 2.092-3.452 4.483-7.038 4.483-3.203 0-4.397-2.825-4.48-5.12.701 1.484 2.073 2.685 4.214 2.63 4.117-.133 6.94-3.852 6.94-7.239 0-4.05-3.022-6.972-8.268-6.972-3.752 0-8.4 1.428-11.455 3.685C2.59 6.937 3.885 9.958 4.35 9.626c2.648-1.904 4.748-3.13 6.784-3.744C8.12 9.244.886 17.05 0 18.425c.1 1.261 1.66 4.648 2.424 4.648.232 0 .431-.133.664-.365a100.49 100.49 0 0 0 5.54-6.765c.222 3.104 1.748 6.898 6.014 6.898 3.819 0 7.604-2.756 9.33-8.965.2-.764-.73-1.361-1.261-.73zm-4.349-5.013c0 1.959-1.926 2.922-3.685 2.922-.941 0-1.664-.247-2.235-.568 1.051-1.592 2.092-3.225 3.21-4.973 1.972.334 2.71 1.43 2.71 2.619z" fill="#FF4438"/></g><text class="lbl" x="723" y="210">Redis</text>
+            <rect class="node-s" x="630" y="285" width="160" height="60" rx="10"/><g transform="translate(643,304.0) scale(0.9)"><path d="M23.5594 14.7228a.5269.5269 0 0 0-.0563-.1191c-.139-.2632-.4768-.3418-1.0074-.2321-1.6533.3411-2.2935.1312-2.5256-.0191 1.342-2.0482 2.445-4.522 3.0411-6.8297.2714-1.0507.7982-3.5237.1222-4.7316a1.5641 1.5641 0 0 0-.1509-.235C21.6931.9086 19.8007.0248 17.5099.0005c-1.4947-.0158-2.7705.3461-3.1161.4794a9.449 9.449 0 0 0-.5159-.0816 8.044 8.044 0 0 0-1.3114-.1278c-1.1822-.0184-2.2038.2642-3.0498.8406-.8573-.3211-4.7888-1.645-7.2219.0788C.9359 2.1526.3086 3.8733.4302 6.3043c.0409.818.5069 3.334 1.2423 5.7436.4598 1.5065.9387 2.7019 1.4334 3.582.553.9942 1.1259 1.5933 1.7143 1.7895.4474.1491 1.1327.1441 1.8581-.7279.8012-.9635 1.5903-1.8258 1.9446-2.2069.4351.2355.9064.3625 1.39.3772a.0569.0569 0 0 0 .0004.0041 11.0312 11.0312 0 0 0-.2472.3054c-.3389.4302-.4094.5197-1.5002.7443-.3102.064-1.1344.2339-1.1464.8115-.0025.1224.0329.2309.0919.3268.2269.4231.9216.6097 1.015.6331 1.3345.3335 2.5044.092 3.3714-.6787-.017 2.231.0775 4.4174.3454 5.0874.2212.5529.7618 1.9045 2.4692 1.9043.2505 0 .5263-.0291.8296-.0941 1.7819-.3821 2.5557-1.1696 2.855-2.9059.1503-.8707.4016-2.8753.5388-4.1012.0169-.0703.0357-.1207.057-.1362.0007-.0005.0697-.0471.4272.0307a.3673.3673 0 0 0 .0443.0068l.2539.0223.0149.001c.8468.0384 1.9114-.1426 2.5312-.4308.6438-.2988 1.8057-1.0323 1.5951-1.6698zM2.371 11.8765c-.7435-2.4358-1.1779-4.8851-1.2123-5.5719-.1086-2.1714.4171-3.6829 1.5623-4.4927 1.8367-1.2986 4.8398-.5408 6.108-.13-.0032.0032-.0066.0061-.0098.0094-2.0238 2.044-1.9758 5.536-1.9708 5.7495-.0002.0823.0066.1989.0162.3593.0348.5873.0996 1.6804-.0735 2.9184-.1609 1.1504.1937 2.2764.9728 3.0892.0806.0841.1648.1631.2518.2374-.3468.3714-1.1004 1.1926-1.9025 2.1576-.5677.6825-.9597.5517-1.0886.5087-.3919-.1307-.813-.5871-1.2381-1.3223-.4796-.839-.9635-2.0317-1.4155-3.5126zm6.0072 5.0871c-.1711-.0428-.3271-.1132-.4322-.1772.0889-.0394.2374-.0902.4833-.1409 1.2833-.2641 1.4815-.4506 1.9143-1.0002.0992-.126.2116-.2687.3673-.4426a.3549.3549 0 0 0 .0737-.1298c.1708-.1513.2724-.1099.4369-.0417.156.0646.3078.26.3695.4752.0291.1016.0619.2945-.0452.4444-.9043 1.2658-2.2216 1.2494-3.1676 1.0128zm2.094-3.988-.0525.141c-.133.3566-.2567.6881-.3334 1.003-.6674-.0021-1.3168-.2872-1.8105-.8024-.6279-.6551-.9131-1.5664-.7825-2.5004.1828-1.3079.1153-2.4468.079-3.0586-.005-.0857-.0095-.1607-.0122-.2199.2957-.2621 1.6659-.9962 2.6429-.7724.4459.1022.7176.4057.8305.928.5846 2.7038.0774 3.8307-.3302 4.7363-.084.1866-.1633.3629-.2311.5454zm7.3637 4.5725c-.0169.1768-.0358.376-.0618.5959l-.146.4383a.3547.3547 0 0 0-.0182.1077c-.0059.4747-.054.6489-.115.8693-.0634.2292-.1353.4891-.1794 1.0575-.11 1.4143-.8782 2.2267-2.4172 2.5565-1.5155.3251-1.7843-.4968-2.0212-1.2217a6.5824 6.5824 0 0 0-.0769-.2266c-.2154-.5858-.1911-1.4119-.1574-2.5551.0165-.5612-.0249-1.9013-.3302-2.6462.0044-.2932.0106-.5909.019-.8918a.3529.3529 0 0 0-.0153-.1126 1.4927 1.4927 0 0 0-.0439-.208c-.1226-.4283-.4213-.7866-.7797-.9351-.1424-.059-.4038-.1672-.7178-.0869.067-.276.1831-.5875.309-.9249l.0529-.142c.0595-.16.134-.3257.213-.5012.4265-.9476 1.0106-2.2453.3766-5.1772-.2374-1.0981-1.0304-1.6343-2.2324-1.5098-.7207.0746-1.3799.3654-1.7088.5321a5.6716 5.6716 0 0 0-.1958.1041c.0918-1.1064.4386-3.1741 1.7357-4.4823a4.0306 4.0306 0 0 1 .3033-.276.3532.3532 0 0 0 .1447-.0644c.7524-.5706 1.6945-.8506 2.802-.8325.4091.0067.8017.0339 1.1742.081 1.939.3544 3.2439 1.4468 4.0359 2.3827.8143.9623 1.2552 1.9315 1.4312 2.4543-1.3232-.1346-2.2234.1268-2.6797.779-.9926 1.4189.543 4.1729 1.2811 5.4964.1353.2426.2522.4522.2889.5413.2403.5825.5515.9713.7787 1.2552.0696.087.1372.1714.1885.245-.4008.1155-1.1208.3825-1.0552 1.717-.0123.1563-.0423.4469-.0834.8148-.0461.2077-.0702.4603-.0994.7662zm.8905-1.6211c-.0405-.8316.2691-.9185.5967-1.0105a2.8566 2.8566 0 0 0 .135-.0406 1.202 1.202 0 0 0 .1342.103c.5703.3765 1.5823.4213 3.0068.1344-.2016.1769-.5189.3994-.9533.6011-.4098.1903-1.0957.333-1.7473.3636-.7197.0336-1.0859-.0807-1.1721-.151zm.5695-9.2712c-.0059.3508-.0542.6692-.1054 1.0017-.055.3576-.112.7274-.1264 1.1762-.0142.4368.0404.8909.0932 1.3301.1066.887.216 1.8003-.2075 2.7014a3.5272 3.5272 0 0 1-.1876-.3856c-.0527-.1276-.1669-.3326-.3251-.6162-.6156-1.1041-2.0574-3.6896-1.3193-4.7446.3795-.5427 1.3408-.5661 2.1781-.463zm.2284 7.0137a12.3762 12.3762 0 0 0-.0853-.1074l-.0355-.0444c.7262-1.1995.5842-2.3862.4578-3.4385-.0519-.4318-.1009-.8396-.0885-1.2226.0129-.4061.0666-.7543.1185-1.0911.0639-.415.1288-.8443.1109-1.3505.0134-.0531.0188-.1158.0118-.1902-.0457-.4855-.5999-1.938-1.7294-3.253-.6076-.7073-1.4896-1.4972-2.6889-2.0395.5251-.1066 1.2328-.2035 2.0244-.1859 2.0515.0456 3.6746.8135 4.8242 2.2824a.908.908 0 0 1 .0667.1002c.7231 1.3556-.2762 6.2751-2.9867 10.5405zm-8.8166-6.1162c-.025.1794-.3089.4225-.6211.4225a.5821.5821 0 0 1-.0809-.0056c-.1873-.026-.3765-.144-.5059-.3156-.0458-.0605-.1203-.178-.1055-.2844.0055-.0401.0261-.0985.0925-.1488.1182-.0894.3518-.1226.6096-.0867.3163.0441.6426.1938.6113.4186zm7.9305-.4114c.0111.0792-.049.201-.1531.3102-.0683.0717-.212.1961-.4079.2232a.5456.5456 0 0 1-.075.0052c-.2935 0-.5414-.2344-.5607-.3717-.024-.1765.2641-.3106.5611-.352.297-.0414.6111.0088.6356.1851z" fill="#4169E1"/></g><text class="lbl" x="723" y="320">PostgreSQL</text>
+            <rect class="node-w" x="940" y="175" width="170" height="60" rx="10"/><text class="lbl" x="1025" y="210">Toss Payments</text>
+            <text class="lbl-l" x="207" y="167">게이트웨이</text>
+            <text class="lbl-l" x="207" y="277">정적 자원</text>
+            <text class="lbl-l" x="402" y="167">애플리케이션</text>
+            <text class="lbl-l" x="632" y="52">메시징</text>
+            <text class="lbl-l" x="632" y="167">저장소 · 캐시</text>
+            <text class="lbl-l" x="632" y="277">저장소 · 영속</text>
+            <text class="lbl-l" x="942" y="167">외부 연동</text>
+            <rect class="node" x="205" y="370" width="585" height="32" rx="8"/>
+            <text class="lbl-s" x="497" y="391">관측 · 부하: Prometheus · Micrometer · Grafana · Loki · k6</text>
+            <path class="edge" d="M140,205 H205" marker-end="url(#ec-arr)"/>
+            <path class="edge" d="M355,205 H400" marker-end="url(#ec-arr)"/>
+            <path class="edge" d="M280,235 V285" marker-end="url(#ec-arr)"/>
+            <path class="edge" d="M580,205 H605 V90 H630" marker-end="url(#ec-arr)"/>
+            <path class="edge" d="M580,205 H630" marker-end="url(#ec-arr)"/>
+            <path class="edge" d="M580,205 H605 V315 H630" marker-end="url(#ec-arr)"/>
+            <path class="edge" style="stroke:#e08a2b;stroke-width:1.8" d="M490,175 V20 H1025 V175" marker-end="url(#ec-arr-d)"/>
+            <text class="lbl-l" x="800" y="14">결제 승인 · 취소</text>
+            </svg>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="발급 시퀀스" data-screen-label="04" data-speaker-notes="접수 구간과 확정 구간이 어디서 갈리는지, 118ms 가 무엇을 잰 값인지를 한 장으로">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">04</div>
+      <div class="head-title"><div class="k">이커머스 · 쿠폰 발급 · Sequence</div><h2>발급 한 건이 흐르는 순서</h2>
+        <div class="sub">접수는 톰캣 스레드, 확정은 컨슈머 스레드 — ⑥에서 응답이 끝난다</div></div>
+    </div>
+    <div class="body-area">
+      <p class="lead-p"><span class="mk p">문제</span>한 트랜잭션 안의 재고 행 잠금이 모든 요청을 직렬화 — 2,000 RPS 에서 p95 <b>32.3초</b>. 그래서 접수와 확정을 나눔.<br />
+        ⑥ 의 <code>202 + requestId</code> 로 응답이 끝나고 ⑦~⑩ 은 요청 스레드와 무관. <b>p95 118ms 는 ①~⑫</b> — 접수가 아니라 <b>확정 확인까지</b>.</p>
+      <div class="svgfig">
+        <svg viewBox="0 0 1180 510" xmlns="http://www.w3.org/2000/svg" style="--fs:14px">
+            <defs>
+            <marker id="sq-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#246bff"/></marker>
+            <marker id="sq-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#17864a"/></marker>
+            <marker id="sq-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+            </defs>
+            <rect class="node-a" x="20" y="20" width="140" height="44" rx="9"/><text class="lbl-s" x="90" y="47">클라이언트</text>
+            <path class="edge-d" d="M90,64 V498"/>
+            <rect class="node-a" x="210" y="20" width="140" height="44" rx="9"/><text class="lbl-s" x="280" y="47">API 접수</text>
+            <path class="edge-d" d="M280,64 V498"/>
+            <rect class="node-a" x="380" y="20" width="180" height="44" rx="9"/><text class="lbl-s" x="470" y="47">Redis Lua 게이트</text>
+            <path class="edge-d" d="M470,64 V498"/>
+            <rect class="node-a" x="600" y="20" width="120" height="44" rx="9"/><text class="lbl-s" x="660" y="47">Kafka</text>
+            <path class="edge-d" d="M660,64 V498"/>
+            <rect class="node-a" x="790" y="20" width="120" height="44" rx="9"/><text class="lbl-s" x="850" y="47">컨슈머</text>
+            <path class="edge-d" d="M850,64 V498"/>
+            <rect class="node-a" x="980" y="20" width="150" height="44" rx="9"/><text class="lbl-s" x="1055" y="47">PostgreSQL</text>
+            <path class="edge-d" d="M1055,64 V498"/>
+            <rect class="grp" x="30" y="286" width="1120" height="1" />
+            <text class="lbl-l" x="34" y="300">접수 응답 종료 — ⑦~⑩ 은 컨슈머 스레드, ⑪⑫ 는 클라이언트 폴링</text>
+            <path class="edge" style="stroke:#246bff;stroke-width:1.8" d="M90,100 H280" marker-end="url(#sq-a)"/>
+            <text class="lbl-s" x="185" y="89">① 발급 요청</text>
+            <path class="edge" style="stroke:#246bff;stroke-width:1.8" d="M280,134 H470" marker-end="url(#sq-a)"/>
+            <text class="lbl-s" x="375" y="123">② 중복 검사와 재고 차감을 한 명령으로</text>
+            <path class="edge" style="stroke:#17864a;stroke-width:1.8" d="M470,166 H280" marker-end="url(#sq-g)"/>
+            <text class="lbl-s" x="375" y="155">③ 통과 = 재고 차감 · 발급자 등록 완료</text>
+            <path class="edge" style="stroke:#246bff;stroke-width:1.8" d="M280,198 H470" marker-end="url(#sq-a)"/>
+            <text class="lbl-s" x="375" y="187">④ 상태 WAITING 기록</text>
+            <path class="edge" style="stroke:#246bff;stroke-width:1.8" d="M280,230 H660" marker-end="url(#sq-a)"/>
+            <text class="lbl-s" x="470" y="219">⑤ 요청 이벤트 발행, key = userId</text>
+            <path class="edge" style="stroke:#17864a;stroke-width:1.8" d="M280,262 H90" marker-end="url(#sq-g)"/>
+            <text class="lbl-s" x="185" y="251">⑥ 202, requestId — 여기서 응답이 끝남</text>
+            <path class="edge" style="stroke:#8397b2;stroke-width:1.8" d="M660,320 H850" marker-end="url(#sq-n)"/>
+            <text class="lbl-s" x="755" y="309">⑦ 배치 수신 (최대 500건)</text>
+            <path class="edge" style="stroke:#8397b2;stroke-width:1.8" d="M850,352 H1055" marker-end="url(#sq-n)"/>
+            <text class="lbl-s" x="952" y="341">⑧ INSERT … ON CONFLICT DO NOTHING</text>
+            <path class="edge" style="stroke:#8397b2;stroke-width:1.8" d="M1055,384 H850" marker-end="url(#sq-n)"/>
+            <text class="lbl-s" x="952" y="373">⑨ RETURNING user_id</text>
+            <path class="edge" style="stroke:#8397b2;stroke-width:1.8" d="M850,416 H470" marker-end="url(#sq-n)"/>
+            <text class="lbl-s" x="660" y="405">⑩ 상태 SUCCESS 기록 (파이프라인 1회)</text>
+            <path class="edge" style="stroke:#246bff;stroke-width:1.8" d="M90,452 H280" marker-end="url(#sq-a)"/>
+            <text class="lbl-s" x="185" y="441">⑪ 상태 조회, 100ms 주기</text>
+            <path class="edge" style="stroke:#17864a;stroke-width:1.8" d="M280,484 H90" marker-end="url(#sq-g)"/>
+            <text class="lbl-s" x="185" y="473">⑫ SUCCESS: 95%가 첫 폴링 시점에 이미 확정</text>
+            </svg>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="한정 수량 발급" data-screen-label="05" data-speaker-notes="요청 스레드가 DB 를 거치지 않게 하고 트랜잭션을 INSERT 한 번으로 좁힌 세 단계와, 채택 구조에서 스레드 · 커넥션이 실제로 얼마나 쓰였는지">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">05</div>
+      <div class="head-title"><div class="k">이커머스 · 쿠폰 발급 · 접근 방식</div><h2>트랜잭션은 INSERT 한 번으로, 요청 스레드는 커넥션 없이</h2>
+        <div class="sub">커넥션 풀 50 · 컨슈머 4 · 인증 제외 측정 — 쿠폰 경로의 요청 스레드는 Redis 판정과 이벤트 발행까지, DB 는 컨슈머의 INSERT 한 번만</div></div>
+    </div>
+    <div class="body-area">
+      <div class="steps lg">
+        <div class="step"><div class="n">STEP 1</div><h3>판정 선행</h3><p>Redis 가 재고 · 중복 발급 여부를 <b>선제적으로 판별</b>해 발급 가능한 요청만 통과 — DB 부하를 낮춤</p></div>
+        <div class="step"><div class="n">STEP 2</div><h3>락 대기는 트랜잭션 밖</h3><p>분산락 대기 · Redis 되돌림은 트랜잭션 밖(<b>NOT_SUPPORTED</b>), 저장만 <b>REQUIRES_NEW · timeout</b>. 쿠폰 커넥션 50 → 1(락이 저장을 직렬화)</p></div>
+        <div class="step"><div class="n">STEP 3</div><h3>확정을 컨슈머로</h3><p>요청 경로의 트랜잭션을 없애고, 재고 행 UPDATE 대신 <b>발급 행 INSERT 한 번</b>. 쿠폰 커넥션 1 → 4(컨슈머 병렬)</p></div>
+      </div>
+      <div class="pools grow">
+        <div class="pool">
+          <h3>요청 스레드</h3>
+          <div class="d">가상 스레드 — 풀 크기 제한 없음, 쿠폰 경로에서 DB 커넥션 미점유</div>
+          <div class="slots" style="grid-template-columns: repeat(7, 1fr)"><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i></div>
+          <span class="tag">2,000 RPS 에서 동시 처리 p95 12건 · 최대 102건(1회)</span>
+        </div>
+        <span class="arr">→</span>
+        <div class="pool">
+          <h3>컨슈머 4</h3>
+          <div class="d">키 userId 로 파티션 4개에 분산 · poll 한 번에 최대 500건</div>
+          <div class="slots" style="grid-template-columns: repeat(4, 1fr); gap:0.7cqw"><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i></div>
+          <span class="tag">INSERT … ON CONFLICT 한 번</span>
+        </div>
+        <span class="arr">→</span>
+        <div class="pool">
+          <h3>커넥션 풀 50</h3>
+          <div class="d">확정을 맡은 컨슈머만 커넥션 사용</div>
+          <div class="slots"><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot on"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i><i class="slot"></i></div>
+          <span class="tag a">최대 4 / 50 · 대기 0</span>
+        </div>
+      </div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>실제 작업 중</span><span><i style="border:1.5px dashed #b9c6d8"></i>비어 있음</span></div>
+      <div class="flow lg">
+        <div class="cap">트랜잭션 범위 — 쿠폰 경로에서 커넥션을 쓰는 구간은 컨슈머뿐</div>
+        <div class="flow-row">
+          <span class="st">중복 · 재고 판정 (Redis Lua)</span><span class="sep">›</span>
+          <span class="st">상태 WAITING</span><span class="sep">›</span>
+          <span class="st">Kafka 발행</span><span class="sep">›</span>
+          <span class="st">202 응답</span><span class="sep">›</span>
+          <span class="st">쿠폰 조회</span><span class="sep">›</span>
+          <span class="st a">INSERT … ON CONFLICT</span><span class="sep">›</span>
+          <span class="st">상태 SUCCESS</span>
+        </div>
+        <div class="flow-under" style="grid-template-columns: 4fr 3fr">
+          <div>요청 스레드 — 트랜잭션 · 커넥션 없음</div>
+          <div class="a">컨슈머 스레드 — INSERT 만 REQUIRES_NEW · timeout 10초</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="발급 측정 결과" data-screen-label="06" data-speaker-notes="같은 부하에서 한 번에 하나씩 바꾸고 다시 잰 세 단계의 수신 속도 · 응답시간 · 발급 수 · 커넥션. 쿠폰 커넥션 열은 9/24~25 재측정 — DB pg_stat_activity 10ms 표본에서 쿠폰 쿼리를 실행 중인 연결의 최대(부하 옆 상품 조회 제외)">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">06</div>
+      <div class="head-title"><div class="k">이커머스 · 쿠폰 발급 · 결과</div><h2>같은 부하에서 505 → 2,000 RPS, p95 32.3초 → 118ms</h2>
+        <div class="sub">세 단계 모두 2,000 RPS × 50초 · 총 10만 건 · 재고 1만 · 사용자 9만 명(1만 건은 같은 사용자 재요청) · 인증 제외 — 한 번에 하나씩 바꾸고 다시 측정</div></div>
+    </div>
+    <div class="body-area">
+      <div class="metrics c4 lg">
+        <div class="mcard"><strong>2,000 RPS</strong><span>서버 수신 속도</span><small>505 RPS → 유입 전량 수신</small></div>
+        <div class="mcard"><strong>118ms</strong><span>발급 요청 p95</span><small>32.3초 → 118ms</small></div>
+        <div class="mcard"><strong>10,000건</strong><span>재고 1만 중 발급</span><small>6,676 · 460 → 10,000</small></div>
+        <div class="mcard"><strong>4개</strong><span>쿠폰 경로 커넥션 최대</span><small>풀 50 중 · 50 → 1 → 4</small></div>
+      </div>
+      <div class="cols" style="grid-template-columns: 1.22fr 0.78fr">
+        <div class="table-card fill">
+          <table class="nowrap" style="--tf:1.9cqh">
+            <thead><tr><th>단계</th><th>수신 속도<br>(RPS)</th><th>p95</th><th>발급</th><th>커넥션</th><th>조회 성공</th><th>잠금 초과<br>거절</th></tr></thead>
+            <tbody>
+              <tr><td>1단계 — DB 행 잠금</td><td>505</td><td>32.3초</td><td>6,676</td><td>50</td><td>20%</td><td>0</td></tr>
+              <tr><td>2단계 — 판정 선행<br>· 분산락</td><td>1,232</td><td>12.8초</td><td>460</td><td>1</td><td>100%</td><td>64,106</td></tr>
+              <tr class="pick"><td>3단계 — 비동기 확정</td><td>2,000</td><td>118ms</td><td>10,000</td><td>4</td><td>100%</td><td>0</td></tr>
+              <tr><td>3단계 · 스파이크<br>5,000 RPS</td><td>2,100</td><td>1,647ms</td><td>10,000</td><td>4</td><td>100%</td><td>0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel tight">
+          <div class="sub-label" style="font-size:1.9cqh">단계별 서버 수신 속도 (RPS)</div>
+          <div class="bars lg">
+            <div class="bar-row"><span class="l">1단계</span><span class="track"><span class="fill" style="display:block;width:25.3%"></span></span><span class="v">505</span></div>
+            <div class="bar-row"><span class="l">2단계</span><span class="track"><span class="fill" style="display:block;width:61.6%"></span></span><span class="v">1,232</span></div>
+            <div class="bar-row"><span class="l">3단계</span><span class="track"><span class="fill a" style="display:block;width:100%"></span></span><span class="v a">2,000</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="컨슈머 · 파티션 수" data-screen-label="07" data-speaker-notes="파티션과 컨슈머를 1:1 로 맞춰 4 · 8 · 16 개를 같은 부하로 잰 회차와, 늘려도 확정이 빨라지지 않고 커넥션만 늘어 4 로 정한 근거. 커넥션 순간 최대는 DB pg_stat_activity 10ms 표본의 쿠폰 조회 · INSERT 연결 수(3회 중 최대 — 10ms 표본이 16개가 동시에 겹친 수 ms 를 놓칠 수 있어), 평균 점유는 Hikari 사용 시간 합 ÷ 발급 창 길이">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">07</div>
+      <div class="head-title"><div class="k">이커머스 · 쿠폰 발급 · 튜닝</div><h2>컨슈머 · 파티션 수 — 늘려도 확정이 빨라지지 않고 커넥션만 증가</h2>
+        <div class="sub">파티션 = 컨슈머 4 · 8 · 16 을 같은 부하(2,000 RPS × 50초)로 지점마다 재기동 · 웜업 1회 뒤 3회, 확정 p95 가 가장 짧은 회차 기준 → 컨슈머 · 파티션 4 로 확정</div></div>
+    </div>
+    <div class="body-area">
+      <div class="metrics c4 lg">
+        <div class="mcard"><strong>39ms</strong><span>컨슈머 4 확정 p95</span><small>8 → 39ms · 16 → 52.5ms</small></div>
+        <div class="mcard"><strong>1.75 → 6.95개</strong><span>평균 점유 커넥션</span><small>컨슈머 4 → 16 · 풀 50</small></div>
+        <div class="mcard"><strong>8.2 → 2.7행</strong><span>INSERT 한 번에 담긴 행</span><small>호출 1,216 → 3,641회</small></div>
+        <div class="mcard"><strong>4 = 4</strong><span>파티션 = 컨슈머</span><small>파티션당 컨슈머 1개</small></div>
+      </div>
+      <div class="cols" style="grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr)">
+        <div class="table-card fill">
+          <table class="compact nowrap tight-cells" style="--tf:2.4cqh">
+            <thead><tr><th>컨슈머</th><th>확정 p95</th><th>접수 p95</th><th>커넥션<br>순간 최대</th><th>평균 점유</th><th>INSERT<br>호출</th><th>호출당 행</th></tr></thead>
+            <tbody>
+              <tr class="pick"><td>4</td><td>39ms</td><td>12ms</td><td>4</td><td>1.75</td><td>1,216</td><td>8.2행</td></tr>
+              <tr><td>8</td><td>39ms</td><td>13ms</td><td>8</td><td>3.43</td><td>2,253</td><td>4.4행</td></tr>
+              <tr><td>16</td><td>52.5ms</td><td>18ms</td><td>16</td><td>6.95</td><td>3,641</td><td>2.7행</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout" style="--ft:2.2cqh">
+          <div class="row"><span class="t">근거 1</span><p><b>늘려도 빨라지지 않음</b> — 확정 p95(접수 → DB INSERT) 39 → 39 → 52.5ms. 컨슈머 4개가 이미 발급 10,000건을 도착 속도대로 약 5초 안에 확정해 확정 경로는 병목이 아님</p></div>
+          <div class="row"><span class="t">근거 2</span><p><b>커넥션만 증가</b> — 평균 점유 1.75 → 3.43 → 6.95개. 이 풀 50 은 <b>주문 · 결제와 함께 쓰는 풀</b>이고, 컨슈머가 늘수록 한 번에 받는 양이 줄어 INSERT 가 1,216 → 3,641회로 쪼개짐</p></div>
+          <div class="row"><span class="t">선택</span><p><b>컨슈머 4 · 파티션 4</b> — 1:1 로 맞춰 노는 컨슈머도, 파티션 여러 개를 차례로 맡는 컨슈머도 없게 배정</p></div>
+          <div class="row"><span class="t g">한계</span><p>처리 상한은 확정이 아니라 <b>접수 경로</b> — 2,500 RPS 까지 접수 p95 175ms · 미발송 0.2%, 3,000 RPS 부터 미발송 8~55%(9/2 지점당 1회)</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="배치 상한" data-screen-label="08" data-speaker-notes="컨슈머 · 파티션 4 에서 한 번에 받아 INSERT 한 번으로 넣는 건수의 상한을 바꿔 잰 회차(표는 본측정 3회 합계 · 발급 30,000행)와, 채택 설정 재현 회차(9/23)의 k6 실측 원문">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">08</div>
+      <div class="head-title"><div class="k">이커머스 · 쿠폰 발급 · 튜닝</div><h2>배치 상한 — 파티션당 1초치 500, 평소에는 닿지 않는 한도</h2>
+        <div class="sub">컨슈머 · 파티션 4 · 상한(max.poll.records) 50 · 500 · 2,000 을 같은 부하로 웜업 1회 뒤 3회 → 파티션당 1초치 500 으로 확정 · 위 k6 원문은 채택 설정의 9/23 재현 회차</div></div>
+    </div>
+    <div class="body-area">
+      <div class="stack" style="gap:1.4cqh; flex:1; min-height:0">
+        <div class="term" style="flex:none"><pre style="font-size:1.55cqh; line-height:1.5">█ TOTAL RESULTS
+
+  CUSTOM
+  issue_accept_latency...........: avg=4.2ms     min=1.12ms   med=2.82ms max=34.78ms  p(90)=8.13ms  <span class="ring">p(95)=11.25ms</span> p(99)=22.24ms
+  issue_dup......................: 9996    41.641431/s
+  issue_soldout..................: 80000   333.264752/s
+  <span class="ring">issue_success..................: 10000</span>   41.658094/s
+
+  EXECUTION
+  <span class="ring">dropped_iterations.............: 4</span>       0.016663/s
+
+$ python3 scripts/analyze-e2e.py backend/docs/measurements/coupon_kafka_re2e-thr-r1_2026-09-23
+  T_accept  (t1-t0, 접수 건): n=10000 p50=3.0 p95=12.0 p99=22.0 max=35.0 ms
+  T_e2e     (촘촘한 폴링 표본만): n=500 p50=105.0 <span class="ring">p95=118.0</span> p99=127.0 max=135.0 ms
+  T_confirm (created_at-t1, DB): n=10000 p50=11.5 p95=38.5 p99=54.5 max=76.5 ms</pre></div>
+        <div class="cols" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)">
+          <div class="table-card fill">
+            <table class="compact nowrap tight-cells" style="--tf:2.4cqh">
+              <thead><tr><th>상한</th><th>INSERT 호출 (3회)</th><th>호출당 평균</th><th>한 번 최대</th><th>상한 도달</th></tr></thead>
+              <tbody>
+                <tr><td>50</td><td>4,150</td><td>7.2행</td><td>50행</td><td>3회 (0.07%)</td></tr>
+                <tr class="pick"><td>500</td><td>4,746</td><td>6.3행</td><td>62행</td><td>0</td></tr>
+                <tr><td>2,000</td><td>6,408</td><td>4.7행</td><td>59행</td><td>0</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout" style="--ft:2.2cqh">
+            <div class="row"><span class="t">근거</span><p><b>2,000 RPS</b> 가 userId 키로 파티션 4개에 흩어져 <b>파티션마다 초당 약 500건</b> — 파티션 하나를 컨슈머 하나가 맡아 컨슈머당 초당 500건</p></div>
+            <div class="row"><span class="t">선택</span><p><b>상한 500</b> — 컨슈머가 1초 밀려 쌓인 500건을 poll 한 번 · <span style="white-space:nowrap">INSERT 한 번으로</span> 처리하는 크기</p></div>
+            <div class="row"><span class="t">관측</span><p>평소 INSERT 한 번에 평균 5~7행 · 가장 많아도 62행이라 500 · 2,000 은 <b>한 번도 닿지 않음</b> — 상한이 작동한 경우는 50 의 3회(0.07%)뿐</p></div>
+            <div class="row"><span class="t g">트레이드오프</span><p>상한을 키우면 한 배치가 실패했을 때 다시 처리할 범위만 커짐</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="폴백 파이프라인" data-screen-label="09" data-speaker-notes="재고 키가 유실된 상태에서 판정 없이 실린 이벤트가 동시에 도착했을 때, 먼저 도착한 컨슈머 하나만 락을 잡고 나머지는 재판정으로 정상 경로에 합류하는 순서">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">09</div>
+      <div class="head-title"><div class="k">이커머스 · 쿠폰 발급 · Fallback</div><h2>재고 키 부재 폴백 파이프라인</h2>
+        <div class="sub">접수는 기다리지 않고 거절, 컨슈머는 하나만 락을 잡고 나머지는 기다렸다 재판정</div></div>
+    </div>
+    <div class="body-area">
+      <p class="lead-p"><span class="mk p">문제</span>재고 키가 유실된 상태에서 판정 없이 실린 이벤트(<code>gateReserved=false</code>, 배포 전 큐에 남은 구 형식)는 컨슈머가 재고를 심고 다시 판정해야 함. 키가 <code>userId</code> 라 파티션 4개에 흩어져 <b>컨슈머 4개가 동시에 키 부재를 발견</b> — 그대로 두면 넷이 각자 DB 를 집계.<br />
+        <span class="mk s">해결</span><b>쿠폰 단위 분산락으로 초기화를 한 컨슈머에 맡기고</b> 나머지는 락이 풀린 뒤 Lua 재판정으로 합류.<br />
+        <span class="mk r">결과</span>2,000 RPS · 1만 건 — DB 집계 <b>1회</b>, 발급 <b>5,000건 = 발행 수량</b>, <b>5.06초</b> 안에 처리(3회 동일)</p>
+      <div class="svgfig">
+        <svg viewBox="0 0 1180 470" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+            <marker id="ec-fb-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+            <marker id="ec-fb-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#246bff"/></marker>
+            <marker id="ec-fb-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#17864a"/></marker>
+            <marker id="ec-fb-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e08a2b"/></marker>
+            </defs>
+            <path style="stroke:#c9d4e3;stroke-width:1.5;fill:none" d="M295,4 V466"/>
+            <path style="stroke:#c9d4e3;stroke-width:1.5;fill:none" d="M590,4 V466"/>
+            <path style="stroke:#c9d4e3;stroke-width:1.5;fill:none" d="M885,4 V466"/>
+            <path style="stroke:#c9d4e3;stroke-width:1.5;fill:none" d="M900,236 H1162"/>
+            <circle cx="85" cy="17" r="11" fill="#246bff"/>
+            <text class="lbl-s" x="85" y="21.5" style="font:800 14px Pretendard, system-ui, sans-serif;fill:#fff">1</text>
+            <text class="lbl" x="104" y="23" style="font:800 16px Pretendard, system-ui, sans-serif;fill:#1f2d4a;text-anchor:start">미판정 이벤트 도착</text>
+            <circle cx="381" cy="17" r="11" fill="#246bff"/>
+            <text class="lbl-s" x="381" y="21.5" style="font:800 14px Pretendard, system-ui, sans-serif;fill:#fff">2</text>
+            <text class="lbl" x="400" y="23" style="font:800 16px Pretendard, system-ui, sans-serif;fill:#1f2d4a;text-anchor:start">파티션 4개로 분산</text>
+            <circle cx="680" cy="17" r="11" fill="#246bff"/>
+            <text class="lbl-s" x="680" y="21.5" style="font:800 14px Pretendard, system-ui, sans-serif;fill:#fff">3</text>
+            <text class="lbl" x="699" y="23" style="font:800 16px Pretendard, system-ui, sans-serif;fill:#1f2d4a;text-anchor:start">키 부재 동시 발견</text>
+            <circle cx="973" cy="17" r="11" fill="#246bff"/>
+            <text class="lbl-s" x="973" y="21.5" style="font:800 14px Pretendard, system-ui, sans-serif;fill:#fff">4</text>
+            <text class="lbl" x="992" y="23" style="font:800 16px Pretendard, system-ui, sans-serif;fill:#1f2d4a;text-anchor:start">1개만 분산락 획득</text>
+            <circle cx="972" cy="255" r="11" fill="#246bff"/>
+            <text class="lbl-s" x="972" y="259.5" style="font:800 14px Pretendard, system-ui, sans-serif;fill:#fff">5</text>
+            <text class="lbl" x="991" y="261" style="font:800 16px Pretendard, system-ui, sans-serif;fill:#1f2d4a;text-anchor:start">Lua 재판정 · 확정</text>
+            <rect class="node" x="58" y="170" width="180" height="56" rx="10"/>
+            <text class="lbl-s" x="148" y="192" style="font:700 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">재고 키 유실</text>
+            <text class="lbl-s" x="148" y="211" style="font:500 14px Pretendard, system-ui, sans-serif;fill:#46546e">Redis 키 부재</text>
+            <rect class="node-w" x="58" y="274" width="180" height="56" rx="10"/>
+            <text class="lbl-s" x="148" y="296" style="font:700 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">미판정 이벤트</text>
+            <text class="lbl-s" x="148" y="315" style="font:500 14px Pretendard, system-ui, sans-serif;fill:#46546e">gateReserved=false</text>
+            <path class="edge" d="M148,226 V274" marker-end="url(#ec-fb-a)"/>
+            <rect class="grp" x="343" y="38" width="200" height="412" rx="12"/>
+            <text class="lbl-l" x="351" y="56" style="font:700 14px Pretendard, system-ui, sans-serif;fill:#46546e">Kafka</text>
+            <rect class="node-w" x="368" y="66" width="150" height="56" rx="7"/>
+            <text class="lbl-s" x="443" y="99" style="font:600 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">partition 0</text>
+            <path class="edge-d" d="M238,302 H319 V94 H368" marker-end="url(#ec-fb-a)"/>
+            <rect class="node-w" x="368" y="170" width="150" height="56" rx="7"/>
+            <text class="lbl-s" x="443" y="203" style="font:600 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">partition 1</text>
+            <path class="edge-d" d="M238,302 H319 V198 H368" marker-end="url(#ec-fb-a)"/>
+            <rect class="node-w" x="368" y="274" width="150" height="56" rx="7"/>
+            <text class="lbl-s" x="443" y="307" style="font:600 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">partition 2</text>
+            <path class="edge-d" d="M238,302 H368" marker-end="url(#ec-fb-a)"/>
+            <rect class="node-w" x="368" y="378" width="150" height="56" rx="7"/>
+            <text class="lbl-s" x="443" y="411" style="font:600 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">partition 3</text>
+            <path class="edge-d" d="M238,302 H319 V406 H368" marker-end="url(#ec-fb-a)"/>
+            <rect class="grp" x="638" y="38" width="200" height="412" rx="12"/>
+            <text class="lbl-l" x="646" y="56" style="font:700 14px Pretendard, system-ui, sans-serif;fill:#46546e">컨슈머 그룹</text>
+            <rect class="node-g" x="663" y="66" width="150" height="56" rx="7"/>
+            <text class="lbl-s" x="738" y="99" style="font:600 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">consumer 0</text>
+            <path class="edge" d="M518,94 H663" marker-end="url(#ec-fb-a)"/>
+            <rect class="node" x="663" y="170" width="150" height="56" rx="7"/>
+            <text class="lbl-s" x="738" y="203" style="font:600 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">consumer 1</text>
+            <path class="edge" d="M518,198 H663" marker-end="url(#ec-fb-a)"/>
+            <rect class="node" x="663" y="274" width="150" height="56" rx="7"/>
+            <text class="lbl-s" x="738" y="307" style="font:600 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">consumer 2</text>
+            <path class="edge" d="M518,302 H663" marker-end="url(#ec-fb-a)"/>
+            <rect class="node" x="663" y="378" width="150" height="56" rx="7"/>
+            <text class="lbl-s" x="738" y="411" style="font:600 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">consumer 3</text>
+            <path class="edge" d="M518,406 H663" marker-end="url(#ec-fb-a)"/>
+            <rect class="node-g" x="908" y="56" width="250" height="76" rx="10"/>
+            <text class="lbl-s" x="1033" y="79" style="font:700 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">consumer 0 · 락 획득</text>
+            <text class="lbl-s" x="1033" y="98" style="font:500 14px Pretendard, system-ui, sans-serif;fill:#46546e">DB 확정 발급 수 집계</text>
+            <text class="lbl-s" x="1033" y="116" style="font:500 14px Pretendard, system-ui, sans-serif;fill:#46546e">발행 수량 − 확정 수 → Redis 적재</text>
+            <path class="edge" style="stroke:#17864a;stroke-width:2" d="M813,94 H908" marker-end="url(#ec-fb-g)"/>
+            <rect class="node-w" x="908" y="170" width="250" height="56" rx="10"/>
+            <text class="lbl-s" x="1033" y="192" style="font:700 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">consumer 1 · 2 · 3 — 락 대기</text>
+            <text class="lbl-s" x="1033" y="211" style="font:500 14px Pretendard, system-ui, sans-serif;fill:#46546e">자기 배치 미커밋, 상한 2초</text>
+            <path class="edge-d" style="stroke:#e08a2b" d="M813,198 H908" marker-end="url(#ec-fb-w)"/>
+            <path class="edge-d" style="stroke:#e08a2b" d="M813,302 H862 V198 H908" marker-end="url(#ec-fb-w)"/>
+            <path class="edge-d" style="stroke:#e08a2b" d="M813,406 H862 V198 H908" marker-end="url(#ec-fb-w)"/>
+            <path class="edge" style="stroke:#17864a;stroke-width:2" d="M1033,132 V170" marker-end="url(#ec-fb-g)"/>
+            <text class="lbl-l" x="1043" y="156" style="font:700 14px Pretendard, system-ui, sans-serif;fill:#0f6b3a">락 해제</text>
+            <rect class="node-a" x="908" y="274" width="250" height="56" rx="10"/>
+            <text class="lbl-s" x="1033" y="296" style="font:700 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">Lua 재판정 (캐시된 재고)</text>
+            <text class="lbl-s" x="1033" y="315" style="font:500 14px Pretendard, system-ui, sans-serif;fill:#46546e">키가 있어 초기화 없이 정상 경로</text>
+            <path class="edge-a" d="M1158,198 H1174 V302 H1158" marker-end="url(#ec-fb-b)"/>
+            <rect class="node-g" x="908" y="378" width="250" height="56" rx="10"/>
+            <text class="lbl-s" x="1033" y="400" style="font:700 14px Pretendard, system-ui, sans-serif;fill:#1f2d4a">확정 저장 — 쿠폰 보유 테이블 INSERT</text>
+            <text class="lbl-s" x="1033" y="419" style="font:500 14px Pretendard, system-ui, sans-serif;fill:#46546e">이후 폴백 이벤트도 전부 정상 경로</text>
+            <path class="edge-a" d="M1033,330 V378" marker-end="url(#ec-fb-b)"/>
+            </svg>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="결제 승인 시퀀스" data-screen-label="10" data-speaker-notes="PG 승인은 되돌릴 수 없고 DB 후처리는 되돌릴 수 있다 — 그 비대칭이 트랜잭션 경계를 어디에 두는지를 정했다">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">10</div>
+      <div class="head-title"><div class="k">이커머스 · 결제 · Sequence</div><h2>결제 승인 경로</h2>
+        <div class="sub">승인은 트랜잭션 밖, 주문 확정 · Outbox 는 한 커밋 — 이벤트는 Outbox 폴러가 요청 경로와 분리해 발행</div></div>
+    </div>
+    <div class="body-area">
+      <p class="lead-p"><b>PG 승인은 되돌릴 수 없고 DB 후처리는 되돌릴 수 있다.</b> 그래서 승인(④⑤)은 트랜잭션 <b>밖</b>, 주문 확정 · Outbox 적재(⑥)는 <b>한 커밋</b>(재고는 상품별 독립 커밋),
+        발행은 폴러(⑧~⑩)가 맡아 <b>롤백된 주문의 이벤트가 나가지 않음</b>.</p>
+      <div class="svgfig">
+        <svg viewBox="0 0 1180 440" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+            <marker id="pg-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#246bff"/></marker>
+            <marker id="pg-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#17864a"/></marker>
+            <marker id="pg-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+            <marker id="pg-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e08a2b"/></marker>
+            </defs>
+            <rect class="node-a" x="20" y="18" width="150" height="42" rx="9"/><text class="lbl-s" x="95" y="44">클라이언트</text>
+            <path class="edge-d" d="M95,60 V428"/>
+            <rect class="node-a" x="215" y="18" width="170" height="42" rx="9"/><text class="lbl-s" x="300" y="44">결제 요청 API</text>
+            <path class="edge-d" d="M300,60 V428"/>
+            <rect class="node-a" x="445" y="18" width="150" height="42" rx="9"/><text class="lbl-s" x="520" y="44">PostgreSQL</text>
+            <path class="edge-d" d="M520,60 V428"/>
+            <rect class="node-a" x="660" y="18" width="140" height="42" rx="9"/><text class="lbl-s" x="730" y="44">PG (외부)</text>
+            <path class="edge-d" d="M730,60 V428"/>
+            <rect class="node-a" x="895" y="18" width="210" height="42" rx="9"/><text class="lbl-s" x="1000" y="44">Outbox 폴러 · Kafka</text>
+            <path class="edge-d" d="M1000,60 V428"/>
+            <rect class="grp" x="30" y="314" width="1120" height="1"/>
+            <text class="lbl-l" x="34" y="328">여기서 응답이 끝남 — 아래는 폴러 스레드가 맡는다 (요청 경로와 분리)</text>
+            <path class="edge" style="stroke:#246bff;stroke-width:1.8" d="M95,98 H300" marker-end="url(#pg-a)"/>
+            <text class="lbl-s" x="197" y="87">① 결제 요청</text>
+            <path class="edge" style="stroke:#246bff;stroke-width:1.8" d="M300,130 H520" marker-end="url(#pg-a)"/>
+            <text class="lbl-s" x="410" y="119">② 멱등 · 금액 검증 조회</text>
+            <path class="edge" style="stroke:#17864a;stroke-width:1.8" d="M520,162 H300" marker-end="url(#pg-g)"/>
+            <text class="lbl-s" x="410" y="151">③ 주문 시 적재된 PENDING 결제 행</text>
+            <path class="edge" style="stroke:#e08a2b;stroke-width:1.8" d="M300,194 H730" marker-end="url(#pg-w)"/>
+            <text class="lbl-s" x="515" y="183">④ 승인 호출 — 멱등키 고정</text>
+            <path class="edge" style="stroke:#17864a;stroke-width:1.8" d="M730,226 H300" marker-end="url(#pg-g)"/>
+            <text class="lbl-s" x="515" y="215">⑤ 승인 성공: 결제 금액 이동 완료</text>
+            <path class="edge" style="stroke:#246bff;stroke-width:1.8" d="M300,258 H520" marker-end="url(#pg-a)"/>
+            <text class="lbl-s" x="410" y="247">⑥ 주문 확정 · Outbox 행 한 커밋 (재고는 상품별 커밋)</text>
+            <path class="edge" style="stroke:#17864a;stroke-width:1.8" d="M300,290 H95" marker-end="url(#pg-g)"/>
+            <text class="lbl-s" x="197" y="279">⑦ 결제 완료 응답</text>
+            <path class="edge" style="stroke:#8397b2;stroke-width:1.8" d="M1000,348 H520" marker-end="url(#pg-n)"/>
+            <text class="lbl-s" x="760" y="337">⑧ 미발행 행 조회, 1초 주기</text>
+            <path class="edge" style="stroke:#8397b2;stroke-width:1.8" d="M520,380 H1000" marker-end="url(#pg-n)"/>
+            <text class="lbl-s" x="760" y="369">⑨ PENDING 행 반환</text>
+            <path class="edge" style="stroke:#8397b2;stroke-width:1.8" d="M1000,412 H520" marker-end="url(#pg-n)"/>
+            <text class="lbl-s" x="760" y="401">⑩ 발행 확인 뒤 PUBLISHED 전이</text>
+            </svg>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="결제 파이프라인" data-screen-label="11" data-speaker-notes="승인과 후처리를 한 트랜잭션에서 떼고 승인 경로에 서킷을 둬, PG 장애가 커넥션을 붙잡지 않게 한 구조">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">11</div>
+      <div class="head-title"><div class="k">이커머스 · 결제 · Pipeline</div><h2>결제 승인 파이프라인</h2>
+        <div class="sub">트랜잭션 경계 분리와 승인 경로 서킷브레이커 — 실패가 커넥션을 붙잡지 않게</div></div>
+    </div>
+    <div class="body-area">
+      <p class="lead-p">앞 장을 <b>트랜잭션 경계</b>로 나눈 그림 — 승인은 밖, 주문 확정 · Outbox 는 한 커밋, <b>승인 경로는 서킷브레이커 격리</b>.</p>
+      <div class="svgfig">
+        <svg viewBox="0 0 1180 250" xmlns="http://www.w3.org/2000/svg" style="--fs:13px">
+          <defs>
+            <marker id="pp-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+            <marker id="pp-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#246bff"/></marker>
+            <marker id="pp-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e08a2b"/></marker>
+          </defs>
+          <rect class="grp" x="215" y="52" width="200" height="92" rx="12"/>
+          <text class="lbl-l" x="215" y="42">트랜잭션 밖 · NOT_SUPPORTED</text>
+          <rect class="grp" x="455" y="52" width="280" height="92" rx="12"/>
+          <text class="lbl-l" x="455" y="42">REQUIRES_NEW — 주문 확정 · Outbox 한 커밋</text>
+          <rect class="grp" x="775" y="52" width="400" height="92" rx="12"/>
+          <text class="lbl-l" x="775" y="42">요청 경로와 분리 — 폴러 스레드</text>
+          <rect class="node" x="20" y="70" width="150" height="56" rx="10"/>
+          <text class="lbl" x="95" y="103">결제 요청</text>
+          <rect class="node-a" x="230" y="70" width="170" height="56" rx="10"/>
+          <text class="lbl-s" x="315" y="93">PG 승인</text>
+          <text class="lbl-s" x="315" y="109">멱등키 고정</text>
+          <rect class="node-g" x="470" y="70" width="250" height="56" rx="10"/>
+          <text class="lbl-s" x="595" y="93">주문 확정 · Outbox 행 적재</text>
+          <text class="lbl-s" x="595" y="109">재고 차감 — 상품별 별도 커밋</text>
+          <rect class="node-s" x="790" y="70" width="160" height="56" rx="10"/>
+          <text class="lbl-s" x="870" y="93">Outbox 폴러</text>
+          <text class="lbl-s" x="870" y="109">1초 주기</text>
+          <rect class="node" x="1010" y="70" width="150" height="56" rx="10"/>
+          <text class="lbl" x="1085" y="103">Kafka 발행</text>
+          <path class="edge" d="M170,98 H230" marker-end="url(#pp-n)"/>
+          <path class="edge-a" d="M400,98 H470" marker-end="url(#pp-a)"/>
+          <path class="edge" d="M720,98 H790" marker-end="url(#pp-n)"/>
+          <path class="edge" d="M950,98 H1010" marker-end="url(#pp-n)"/>
+          <text class="lbl-s" x="315" y="170">서킷브레이커 배치</text>
+          <text class="lbl-s" x="315" y="186">OPEN 이면 PG 미도달로 즉시 실패</text>
+          <path class="edge-d" style="stroke:#e08a2b" d="M595,126 V192" marker-end="url(#pp-w)"/>
+          <rect class="node-w" x="495" y="192" width="200" height="50" rx="10"/>
+          <text class="lbl-s" x="595" y="213">후처리 실패</text>
+          <text class="lbl-s" x="595" y="229">보상 테이블 적재 → 다음 장</text>
+        </svg>
+      </div>
+      <div class="trace">
+        <div class="trace-row"><span class="tk p">문제</span><span class="tx">PG 승인은 되돌릴 수 없고 DB 후처리는 되돌릴 수 있는데 한 경계 안에 있어, 결제만 성립하고 주문은 미확정인 상태가 남음. PG 가 느려지면 승인 호출이 그대로 대기 — 5초 지연 주입 시 PG 에 닿은 호출 p95 <b>5.65초</b></span></div>
+        <div class="trace-row"><span class="tk s">해결</span><span class="tx">승인은 트랜잭션 밖(NOT_SUPPORTED), 후처리는 독립 트랜잭션(REQUIRES_NEW)으로 분리. 결제완료 이벤트는 Outbox로 주문 확정과 같은 커밋에 적재, 재고 차감은 상품별 독립 커밋(도중 실패 시 복원), 서킷브레이커를 승인 · 취소 경로에 각각 배치</span></div>
+        <div class="trace-row"><span class="tk r">결과</span><span class="tx">서킷브레이커 fast-fail로 장애 격리 — 승인 경로 p95 <b>5.65초 → 649.2ms</b>. 5s 지연 + 500 주입 구간 호출 <b>682건</b> 중 <b>667건</b>을 PG 미도달로 차단, 실제 PG 에 닿은 것은 15건</span></div>
+      </div>
+      <div class="metrics c3" style="margin:1.6cqh 0 0">
+        <div class="mcard"><strong>5.65초</strong><span>PG 에 닿은 승인 p95</span><small>서킷이 막기 전 15건 · 5초 지연 주입</small></div>
+        <div class="mcard"><strong>649.2ms</strong><span>승인 fast-fail p95</span><small>서킷브레이커 장애 격리</small></div>
+        <div class="mcard"><strong>667 / 682건</strong><span>PG 미도달로 차단</span><small>응답 1.5초 이하 = PG 미경유 (스텁이 모든 승인을 5초 지연)</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="PG 결제 보상" data-screen-label="12" data-speaker-notes="외부 결제 승인 이후 DB 후처리 실패를 보상 배치로 수렴시키는 설계">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">12</div>
+      <div class="head-title"><div class="k">이커머스 · 결제 · Compensation</div><h2>PG 결제 보상 파이프라인</h2>
+        <div class="sub">Toss Payments 승인 이후 DB 후처리 실패를 사람 개입 없이 보상</div></div>
+    </div>
+    <div class="body-area">
+      <p class="lead-p">PG 승인 뒤 DB 후처리가 실패하면 <b>결제만 성립하고 주문은 미확정인 구간</b> 발생 — 보상 배치가 PG 취소까지 자동 처리.</p>
+      <div class="panel tight" style="margin-bottom:1.4cqh">
+        <div class="sub-label">재시도 · 백오프 · 회로 값이 서로를 참조해 정해진 근거</div>
+        <div class="cols three">
+          <div><p><b>① 재시도 5회 · 백오프 2·4·8·16분</b><br />배치 5회가 <b>유일한 취소 경로</b>라 중간에 포기할 수 없다.
+            백오프 합 30분이 <b>하한</b>이고, 상한은 <b>PG 멱등키 유효 기간</b> — 그보다 길면 같은 키로 재시도해도 PG 가 받지 않는다.</p></div>
+          <div><p><b>② OPEN 45초 vs 배치 주기 30초</b><br />OPEN 이 주기보다 <b>15초 길게</b> 잡혀 있어,
+            서킷이 열린 동안 <b>다음 회차는 반드시 한 번 생략</b>된다. 감수한 비용.</p></div>
+          <div><p><b>③ 상태 머신 · 멱등키 고정</b><br />결제 · 보상 상태는 <b>상태 머신</b>으로 관리하고,
+            재시도마다 <b>같은 멱등키</b>를 써 이중 승인 · 취소를 막는다.</p></div>
+        </div>
+      </div>
+      <div class="cols tw" style="grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr)">
+        <div class="svgfig">
+          <svg viewBox="5 0 750 258" xmlns="http://www.w3.org/2000/svg" style="--fs:14.5px">
+            <defs><marker id="ec-arr-b" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker></defs>
+            <rect class="node" x="15" y="10" width="130" height="56" rx="10"/>
+            <text class="lbl" x="80" y="43">결제 요청</text>
+            <rect class="node-a" x="195" y="10" width="130" height="56" rx="10"/>
+            <text class="lbl" x="260" y="43">PG 승인</text>
+            <rect class="node-g" x="375" y="10" width="170" height="56" rx="10"/>
+            <text class="lbl-s" x="460" y="33">주문 확정</text>
+            <text class="lbl-s" x="460" y="51">재고 차감</text>
+            <rect class="node-s" x="595" y="10" width="130" height="56" rx="10"/>
+            <text class="lbl" x="660" y="43">결제 Outbox</text>
+            <path class="edge" d="M145,38 H195" marker-end="url(#ec-arr-b)"/>
+            <path class="edge-a" d="M325,38 H375" marker-end="url(#ec-arr-b)"/>
+            <path class="edge" d="M545,38 H595" marker-end="url(#ec-arr-b)"/>
+            <rect class="node-w" x="195" y="100" width="130" height="56" rx="10"/>
+            <text class="lbl-s" x="260" y="123">DB 후처리</text>
+            <text class="lbl-s" x="260" y="141">실패</text>
+            <rect class="node-w" x="375" y="100" width="170" height="56" rx="10"/>
+            <text class="lbl-s" x="460" y="123">보상 테이블</text>
+            <text class="lbl-s" x="460" y="141">적재</text>
+            <rect class="node-g" x="595" y="100" width="150" height="56" rx="10"/>
+            <text class="lbl-s" x="670" y="123">보상 배치</text>
+            <text class="lbl-s" x="670" y="141">30초 주기</text>
+            <path class="edge-d" d="M260,66 V100" marker-end="url(#ec-arr-b)"/>
+            <path class="edge-d" d="M325,128 H375" marker-end="url(#ec-arr-b)"/>
+            <path class="edge-d" d="M545,128 H595" marker-end="url(#ec-arr-b)"/>
+            <rect class="node-a" x="375" y="192" width="130" height="56" rx="10"/>
+            <text class="lbl" x="440" y="225">PG 취소</text>
+            <rect class="node-g" x="545" y="192" width="150" height="56" rx="10"/>
+            <text class="lbl" x="620" y="225">정합 복구</text>
+            <path class="edge-d" d="M670,156 V174 H440 V192" marker-end="url(#ec-arr-b)"/>
+            <path class="edge" d="M505,220 H545" marker-end="url(#ec-arr-b)"/>
+          </svg>
+        </div>
+        <div class="trace" style="align-content:center; gap:3cqh">
+          <div class="trace-row"><span class="tk p">문제</span><span class="tx" style="font-size:2.3cqh">PG 승인 뒤 DB 후처리가 실패하면 결제만 성립하고 주문은 미확정인 상태가 남음. 승인은 되돌릴 수 없어 <b>PG 취소</b>로만 정합 복구 가능</span></div>
+          <div class="trace-row"><span class="tk s">해결</span><span class="tx" style="font-size:2.3cqh">실패는 보상 테이블에 적재해 상태 머신으로 관리, 30초 주기 보상 배치가 PG 취소까지 재시도(5회 · 백오프 2·4·8·16분), 취소 경로에도 서킷브레이커 배치</span></div>
+          <div class="trace-row"><span class="tk r">결과</span><span class="tx" style="font-size:2.3cqh">실패 200건이 사람 개입 없이 취소 완료까지 수렴 — p95 <b>98.5초</b>. 감수한 비용: OPEN 유지 <b>45초</b>가 배치 주기 30초보다 길어, 서킷이 열린 동안의 회차는 반드시 하나 생략됨</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-label="AI 튜터링 개요" data-screen-label="13" data-speaker-notes="인증 Redis 와 채팅 Redis 를 분리한 이유, 채팅 쪽만 클러스터로 간 이유를 구조로 보여준다">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">13</div>
+      <div class="head-title"><div class="k">AI 튜터링 · Overview</div><h2>AI 튜터링 서비스</h2>
+        <div class="sub">2025-12 ~ 2026-03 · 9인 팀 백엔드 2인 중 백엔드 리드</div></div>
+    </div>
+    <div class="body-area">
+      <p class="lead-p">9인 팀 백엔드 2인 중 백엔드 리드, 채팅 · 인증의 기술 선택과 구조 결정 주도.
+        <b>Redis 를 용도별로 분리했다</b> — 인증 토큰은 Standalone 으로 충분하지만, 진행 중 세션은 유실되면 대화가 통째로 사라져 <b>Cluster 로 이중화</b>.</p>
+      <div class="chips" style="margin-bottom:1.4cqh">
+        <span>Spring</span><span>Spring AI</span><span>Project Reactor</span><span>SSE</span><span>RAG</span><span>Redis Cluster</span><span>RabbitMQ</span><span>Resilience4j</span><span>Spring State Machine</span><span>pgvector</span>
+      </div>
+      <div class="svgfig">
+        <svg viewBox="0 0 1180 470" xmlns="http://www.w3.org/2000/svg" style="--fs:13.5px">
+            <defs>
+            <marker id="ta-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+            <marker id="ta-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#246bff"/></marker>
+            <marker id="ta-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#17864a"/></marker>
+            </defs>
+            <rect class="grp" x="200" y="45" width="730" height="410" rx="14"/>
+            <g transform="translate(212,431) scale(0.8)"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.184-.186h-2.12a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z" fill="#2496ED"/></g>
+            <text class="lbl-l" x="236" y="445">Docker Compose</text>
+            <rect class="node" x="20" y="205" width="140" height="60" rx="10"/><text class="lbl" x="90" y="241">학생 브라우저</text>
+            <rect class="node-a" x="230" y="205" width="180" height="60" rx="10"/><g transform="translate(241,224) scale(0.85)"><path d="M21.8537 1.4158a10.4504 10.4504 0 0 1-1.284 2.2471A11.9666 11.9666 0 1 0 3.8518 20.7757l.4445.3951a11.9543 11.9543 0 0 0 19.6316-8.2971c.3457-3.0126-.568-6.8649-2.0743-11.458zM5.5805 20.8745a1.0174 1.0174 0 1 1-.1482-1.4323 1.0396 1.0396 0 0 1 .1482 1.4323zm16.1991-3.5806c-2.9385 3.9263-9.2601 2.5928-13.2852 2.7904 0 0-.7161.0494-1.4323.1481 0 0 .2717-.1234.6174-.2469 2.8398-.9877 4.1732-1.1853 5.9018-2.0743 3.2349-1.6545 6.4698-5.2844 7.1118-9.0379-1.2347 3.6053-4.9881 6.7167-8.3959 7.9761-2.3459.8643-6.5685 1.7039-6.5685 1.7039l-.1729-.0988c-2.8645-1.4076-2.9632-7.6304 2.2718-9.6306 2.2966-.889 4.4696-.395 6.9637-.9877 2.6422-.6174 5.7043-2.5929 6.939-5.1857 1.3828 4.1732 3.062 10.643.0493 14.6434z" fill="#6DB33F"/></g><text class="lbl" x="330" y="232">Spring Boot</text><text class="lbl-s" x="330" y="251">VT + Reactor Flux</text>
+            <rect class="node-s" x="520" y="65" width="250" height="58" rx="10"/><g transform="translate(531,83) scale(0.85)"><path d="M22.71 13.145c-1.66 2.092-3.452 4.483-7.038 4.483-3.203 0-4.397-2.825-4.48-5.12.701 1.484 2.073 2.685 4.214 2.63 4.117-.133 6.94-3.852 6.94-7.239 0-4.05-3.022-6.972-8.268-6.972-3.752 0-8.4 1.428-11.455 3.685C2.59 6.937 3.885 9.958 4.35 9.626c2.648-1.904 4.748-3.13 6.784-3.744C8.12 9.244.886 17.05 0 18.425c.1 1.261 1.66 4.648 2.424 4.648.232 0 .431-.133.664-.365a100.49 100.49 0 0 0 5.54-6.765c.222 3.104 1.748 6.898 6.014 6.898 3.819 0 7.604-2.756 9.33-8.965.2-.764-.73-1.361-1.261-.73zm-4.349-5.013c0 1.959-1.926 2.922-3.685 2.922-.941 0-1.664-.247-2.235-.568 1.051-1.592 2.092-3.225 3.21-4.973 1.972.334 2.71 1.43 2.71 2.619z" fill="#FF4438"/></g><text class="lbl-s" x="650" y="89">Auth Redis · Standalone</text><text class="lbl-s" x="650" y="107">JWT · blacklist:access</text>
+            <text class="lbl-l" x="522" y="57">인증</text>
+            <g transform="translate(524,128) scale(0.78)"><path d="M22.71 13.145c-1.66 2.092-3.452 4.483-7.038 4.483-3.203 0-4.397-2.825-4.48-5.12.701 1.484 2.073 2.685 4.214 2.63 4.117-.133 6.94-3.852 6.94-7.239 0-4.05-3.022-6.972-8.268-6.972-3.752 0-8.4 1.428-11.455 3.685C2.59 6.937 3.885 9.958 4.35 9.626c2.648-1.904 4.748-3.13 6.784-3.744C8.12 9.244.886 17.05 0 18.425c.1 1.261 1.66 4.648 2.424 4.648.232 0 .431-.133.664-.365a100.49 100.49 0 0 0 5.54-6.765c.222 3.104 1.748 6.898 6.014 6.898 3.819 0 7.604-2.756 9.33-8.965.2-.764-.73-1.361-1.261-.73zm-4.349-5.013c0 1.959-1.926 2.922-3.685 2.922-.941 0-1.664-.247-2.235-.568 1.051-1.592 2.092-3.225 3.21-4.973 1.972.334 2.71 1.43 2.71 2.619z" fill="#FF4438"/></g>
+            <text class="lbl-l" x="548" y="142">채팅 세션</text>
+            <rect class="grp" x="520" y="150" width="390" height="170" rx="12"/>
+            <rect class="node-s" x="536" y="185" width="118" height="44" rx="7"/><text class="lbl-s" x="595" y="212">Master 0</text>
+            <rect class="node" x="536" y="255" width="118" height="44" rx="7"/><text class="lbl-s" x="595" y="282">Replica 0</text>
+            <path class="edge" style="stroke:#17864a" d="M595,229 V255" marker-end="url(#ta-g)"/>
+            <text class="lbl-s" x="595" y="314">0 – 5,460</text>
+            <rect class="node-s" x="664" y="185" width="118" height="44" rx="7"/><text class="lbl-s" x="723" y="212">Master 1</text>
+            <rect class="node" x="664" y="255" width="118" height="44" rx="7"/><text class="lbl-s" x="723" y="282">Replica 1</text>
+            <path class="edge" style="stroke:#17864a" d="M723,229 V255" marker-end="url(#ta-g)"/>
+            <text class="lbl-s" x="723" y="314">5,461 – 10,922</text>
+            <rect class="node-s" x="792" y="185" width="118" height="44" rx="7"/><text class="lbl-s" x="851" y="212">Master 2</text>
+            <rect class="node" x="792" y="255" width="118" height="44" rx="7"/><text class="lbl-s" x="851" y="282">Replica 2</text>
+            <path class="edge" style="stroke:#17864a" d="M851,229 V255" marker-end="url(#ta-g)"/>
+            <text class="lbl-s" x="851" y="314">10,923 – 16,383</text>
+            <text class="lbl-l" x="522" y="362">비동기 영속화</text>
+            <rect class="node-w" x="520" y="370" width="170" height="56" rx="10"/><text class="lbl" x="605" y="404">RabbitMQ</text>
+            <rect class="node-s" x="740" y="370" width="170" height="56" rx="10"/><g transform="translate(751,387) scale(0.85)"><path d="M23.5594 14.7228a.5269.5269 0 0 0-.0563-.1191c-.139-.2632-.4768-.3418-1.0074-.2321-1.6533.3411-2.2935.1312-2.5256-.0191 1.342-2.0482 2.445-4.522 3.0411-6.8297.2714-1.0507.7982-3.5237.1222-4.7316a1.5641 1.5641 0 0 0-.1509-.235C21.6931.9086 19.8007.0248 17.5099.0005c-1.4947-.0158-2.7705.3461-3.1161.4794a9.449 9.449 0 0 0-.5159-.0816 8.044 8.044 0 0 0-1.3114-.1278c-1.1822-.0184-2.2038.2642-3.0498.8406-.8573-.3211-4.7888-1.645-7.2219.0788C.9359 2.1526.3086 3.8733.4302 6.3043c.0409.818.5069 3.334 1.2423 5.7436.4598 1.5065.9387 2.7019 1.4334 3.582.553.9942 1.1259 1.5933 1.7143 1.7895.4474.1491 1.1327.1441 1.8581-.7279.8012-.9635 1.5903-1.8258 1.9446-2.2069.4351.2355.9064.3625 1.39.3772a.0569.0569 0 0 0 .0004.0041 11.0312 11.0312 0 0 0-.2472.3054c-.3389.4302-.4094.5197-1.5002.7443-.3102.064-1.1344.2339-1.1464.8115-.0025.1224.0329.2309.0919.3268.2269.4231.9216.6097 1.015.6331 1.3345.3335 2.5044.092 3.3714-.6787-.017 2.231.0775 4.4174.3454 5.0874.2212.5529.7618 1.9045 2.4692 1.9043.2505 0 .5263-.0291.8296-.0941 1.7819-.3821 2.5557-1.1696 2.855-2.9059.1503-.8707.4016-2.8753.5388-4.1012.0169-.0703.0357-.1207.057-.1362.0007-.0005.0697-.0471.4272.0307a.3673.3673 0 0 0 .0443.0068l.2539.0223.0149.001c.8468.0384 1.9114-.1426 2.5312-.4308.6438-.2988 1.8057-1.0323 1.5951-1.6698zM2.371 11.8765c-.7435-2.4358-1.1779-4.8851-1.2123-5.5719-.1086-2.1714.4171-3.6829 1.5623-4.4927 1.8367-1.2986 4.8398-.5408 6.108-.13-.0032.0032-.0066.0061-.0098.0094-2.0238 2.044-1.9758 5.536-1.9708 5.7495-.0002.0823.0066.1989.0162.3593.0348.5873.0996 1.6804-.0735 2.9184-.1609 1.1504.1937 2.2764.9728 3.0892.0806.0841.1648.1631.2518.2374-.3468.3714-1.1004 1.1926-1.9025 2.1576-.5677.6825-.9597.5517-1.0886.5087-.3919-.1307-.813-.5871-1.2381-1.3223-.4796-.839-.9635-2.0317-1.4155-3.5126zm6.0072 5.0871c-.1711-.0428-.3271-.1132-.4322-.1772.0889-.0394.2374-.0902.4833-.1409 1.2833-.2641 1.4815-.4506 1.9143-1.0002.0992-.126.2116-.2687.3673-.4426a.3549.3549 0 0 0 .0737-.1298c.1708-.1513.2724-.1099.4369-.0417.156.0646.3078.26.3695.4752.0291.1016.0619.2945-.0452.4444-.9043 1.2658-2.2216 1.2494-3.1676 1.0128zm2.094-3.988-.0525.141c-.133.3566-.2567.6881-.3334 1.003-.6674-.0021-1.3168-.2872-1.8105-.8024-.6279-.6551-.9131-1.5664-.7825-2.5004.1828-1.3079.1153-2.4468.079-3.0586-.005-.0857-.0095-.1607-.0122-.2199.2957-.2621 1.6659-.9962 2.6429-.7724.4459.1022.7176.4057.8305.928.5846 2.7038.0774 3.8307-.3302 4.7363-.084.1866-.1633.3629-.2311.5454zm7.3637 4.5725c-.0169.1768-.0358.376-.0618.5959l-.146.4383a.3547.3547 0 0 0-.0182.1077c-.0059.4747-.054.6489-.115.8693-.0634.2292-.1353.4891-.1794 1.0575-.11 1.4143-.8782 2.2267-2.4172 2.5565-1.5155.3251-1.7843-.4968-2.0212-1.2217a6.5824 6.5824 0 0 0-.0769-.2266c-.2154-.5858-.1911-1.4119-.1574-2.5551.0165-.5612-.0249-1.9013-.3302-2.6462.0044-.2932.0106-.5909.019-.8918a.3529.3529 0 0 0-.0153-.1126 1.4927 1.4927 0 0 0-.0439-.208c-.1226-.4283-.4213-.7866-.7797-.9351-.1424-.059-.4038-.1672-.7178-.0869.067-.276.1831-.5875.309-.9249l.0529-.142c.0595-.16.134-.3257.213-.5012.4265-.9476 1.0106-2.2453.3766-5.1772-.2374-1.0981-1.0304-1.6343-2.2324-1.5098-.7207.0746-1.3799.3654-1.7088.5321a5.6716 5.6716 0 0 0-.1958.1041c.0918-1.1064.4386-3.1741 1.7357-4.4823a4.0306 4.0306 0 0 1 .3033-.276.3532.3532 0 0 0 .1447-.0644c.7524-.5706 1.6945-.8506 2.802-.8325.4091.0067.8017.0339 1.1742.081 1.939.3544 3.2439 1.4468 4.0359 2.3827.8143.9623 1.2552 1.9315 1.4312 2.4543-1.3232-.1346-2.2234.1268-2.6797.779-.9926 1.4189.543 4.1729 1.2811 5.4964.1353.2426.2522.4522.2889.5413.2403.5825.5515.9713.7787 1.2552.0696.087.1372.1714.1885.245-.4008.1155-1.1208.3825-1.0552 1.717-.0123.1563-.0423.4469-.0834.8148-.0461.2077-.0702.4603-.0994.7662zm.8905-1.6211c-.0405-.8316.2691-.9185.5967-1.0105a2.8566 2.8566 0 0 0 .135-.0406 1.202 1.202 0 0 0 .1342.103c.5703.3765 1.5823.4213 3.0068.1344-.2016.1769-.5189.3994-.9533.6011-.4098.1903-1.0957.333-1.7473.3636-.7197.0336-1.0859-.0807-1.1721-.151zm.5695-9.2712c-.0059.3508-.0542.6692-.1054 1.0017-.055.3576-.112.7274-.1264 1.1762-.0142.4368.0404.8909.0932 1.3301.1066.887.216 1.8003-.2075 2.7014a3.5272 3.5272 0 0 1-.1876-.3856c-.0527-.1276-.1669-.3326-.3251-.6162-.6156-1.1041-2.0574-3.6896-1.3193-4.7446.3795-.5427 1.3408-.5661 2.1781-.463zm.2284 7.0137a12.3762 12.3762 0 0 0-.0853-.1074l-.0355-.0444c.7262-1.1995.5842-2.3862.4578-3.4385-.0519-.4318-.1009-.8396-.0885-1.2226.0129-.4061.0666-.7543.1185-1.0911.0639-.415.1288-.8443.1109-1.3505.0134-.0531.0188-.1158.0118-.1902-.0457-.4855-.5999-1.938-1.7294-3.253-.6076-.7073-1.4896-1.4972-2.6889-2.0395.5251-.1066 1.2328-.2035 2.0244-.1859 2.0515.0456 3.6746.8135 4.8242 2.2824a.908.908 0 0 1 .0667.1002c.7231 1.3556-.2762 6.2751-2.9867 10.5405zm-8.8166-6.1162c-.025.1794-.3089.4225-.6211.4225a.5821.5821 0 0 1-.0809-.0056c-.1873-.026-.3765-.144-.5059-.3156-.0458-.0605-.1203-.178-.1055-.2844.0055-.0401.0261-.0985.0925-.1488.1182-.0894.3518-.1226.6096-.0867.3163.0441.6426.1938.6113.4186zm7.9305-.4114c.0111.0792-.049.201-.1531.3102-.0683.0717-.212.1961-.4079.2232a.5456.5456 0 0 1-.075.0052c-.2935 0-.5414-.2344-.5607-.3717-.024-.1765.2641-.3106.5611-.352.297-.0414.6111.0088.6356.1851z" fill="#4169E1"/></g><text class="lbl-s" x="830" y="403">PostgreSQL</text>
+            <text class="lbl-l" x="992" y="197">외부 LLM</text>
+            <rect class="node-w" x="990" y="205" width="160" height="60" rx="10"/><text class="lbl" x="1070" y="232">OpenAI</text><text class="lbl-s" x="1070" y="252">gpt-4.1</text>
+            <path class="edge-a" d="M160,235 H230" marker-start="url(#ta-b)" marker-end="url(#ta-b)"/>
+            <text class="lbl-s" x="195" y="196">요청 ↔ SSE</text>
+            <path class="edge" d="M320,205 V94 H520" marker-end="url(#ta-a)"/>
+            <text class="lbl-l" x="332" y="86">로그인 · 토큰 검증</text>
+            <path class="edge-a" d="M410,235 H520" marker-end="url(#ta-b)"/>
+            <text class="lbl-l" x="416" y="227">세션 읽기 · 쓰기</text>
+            <path class="edge-d" d="M320,265 V398 H520" marker-end="url(#ta-a)"/>
+            <text class="lbl-l" x="332" y="390">완결된 대화만</text>
+            <path class="edge-d" d="M690,398 H740" marker-end="url(#ta-a)"/>
+            <path class="edge-a" d="M320,205 V20 H1070 V205" marker-end="url(#ta-b)"/>
+            <text class="lbl-l" x="690" y="15">LLM 스트리밍 호출</text>
+            </svg>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="채팅 시퀀스" data-screen-label="14" data-speaker-notes="②의 POST 는 즉시 끝나고 답변은 ①에서 연 SSE 로만 나간다 — 요청·응답이 같은 커넥션에 묶이지 않는 구조">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">14</div>
+      <div class="head-title"><div class="k">AI 튜터링 · 실시간 스트리밍 · Sequence</div><h2>채팅 한 건이 흐르는 순서</h2>
+        <div class="sub">연결 수립(①)부터 토큰 전달(④) · 영속화(⑥)까지</div></div>
+    </div>
+    <div class="body-area">
+      <p class="lead-p"><span class="mk p">문제</span>동기 응답은 생성이 끝날 때까지 빈 화면 — 첫 글자 p95 <b>21.40초</b>(= 응답 완료), 그동안 요청 스레드 점유.<br />
+        <b>연결과 요청을 분리했다.</b> ① 의 SSE 는 ⑥ 까지 열려 있고 ② 의 POST 는 <b>즉시 끝남</b> — 답변은 <b>열린 SSE 로</b> 나가고 저장(⑤⑥)은 RabbitMQ 뒤로 밀려 경로가 다름.</p>
+      <div class="svgfig">
+        <svg viewBox="0 0 1180 440" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+            <marker id="cs-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#246bff"/></marker>
+            <marker id="cs-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#17864a"/></marker>
+            <marker id="cs-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+            <marker id="cs-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e08a2b"/></marker>
+            </defs>
+            <rect class="node-a" x="25" y="18" width="140" height="42" rx="9"/><text class="lbl-s" x="95" y="44">브라우저</text>
+            <path class="edge-d" d="M95,60 V428"/>
+            <rect class="node-a" x="220" y="18" width="160" height="42" rx="9"/><text class="lbl-s" x="300" y="44">ChatService</text>
+            <path class="edge-d" d="M300,60 V428"/>
+            <rect class="node-a" x="445" y="18" width="110" height="42" rx="9"/><text class="lbl-s" x="500" y="44">Sink</text>
+            <path class="edge-d" d="M500,60 V428"/>
+            <rect class="node-a" x="620" y="18" width="160" height="42" rx="9"/><text class="lbl-s" x="700" y="44">LLM (OpenAI)</text>
+            <path class="edge-d" d="M700,60 V428"/>
+            <rect class="node-a" x="820" y="18" width="140" height="42" rx="9"/><text class="lbl-s" x="890" y="44">RabbitMQ</text>
+            <path class="edge-d" d="M890,60 V428"/>
+            <rect class="node-a" x="990" y="18" width="170" height="42" rx="9"/><text class="lbl-s" x="1075" y="44">Consumer · DB</text>
+            <path class="edge-d" d="M1075,60 V428"/>
+            <rect class="node-g" x="60" y="176" width="14" height="248" rx="5"/>
+            <text class="lbl-l" x="82" y="424">SSE 연결 유지</text>
+            <path class="edge" style="stroke:#246bff;stroke-width:1.8" d="M95,100 H300" marker-end="url(#cs-a)"/>
+            <text class="lbl-s" x="197" y="89">① GET /chat/connect</text>
+            <path class="edge" style="stroke:#8397b2;stroke-width:1.8" d="M300,132 H500" marker-end="url(#cs-n)"/>
+            <text class="lbl-s" x="400" y="121">sessionId 로 Sink 등록</text>
+            <path class="edge" style="stroke:#17864a;stroke-width:1.8" d="M500,164 H95" marker-end="url(#cs-g)"/>
+            <text class="lbl-s" x="297" y="153">SSE 연결 수립 — 아래 전 구간 유지</text>
+            <path class="edge" style="stroke:#246bff;stroke-width:1.8" d="M95,206 H300" marker-end="url(#cs-a)"/>
+            <text class="lbl-s" x="197" y="195">② POST /chat/message</text>
+            <path class="edge" style="stroke:#17864a;stroke-width:1.8" d="M300,238 H95" marker-end="url(#cs-g)"/>
+            <text class="lbl-s" x="197" y="227">즉시 반환 — 답변은 SSE 로 전달</text>
+            <path class="edge" style="stroke:#e08a2b;stroke-width:1.8" d="M300,270 H700" marker-end="url(#cs-w)"/>
+            <text class="lbl-s" x="500" y="259">③ 스트리밍 호출 (WebClient)</text>
+            <path class="edge" style="stroke:#e08a2b;stroke-width:1.8" d="M700,302 H500" marker-end="url(#cs-w)"/>
+            <text class="lbl-s" x="600" y="291">토큰 도착 (n회 반복)</text>
+            <path class="edge" style="stroke:#246bff;stroke-width:1.8" d="M500,334 H95" marker-end="url(#cs-a)"/>
+            <text class="lbl-s" x="297" y="323">④ 열려 있던 SSE 로 토큰 push</text>
+            <path class="edge" style="stroke:#8397b2;stroke-width:1.8" d="M300,376 H890" marker-end="url(#cs-n)"/>
+            <text class="lbl-s" x="595" y="365">⑤ 저장 이벤트 발행 (publishedAt 동봉)</text>
+            <path class="edge" style="stroke:#8397b2;stroke-width:1.8" d="M890,408 H1075" marker-end="url(#cs-n)"/>
+            <text class="lbl-s" x="982" y="397">⑥ 비동기 영속화</text>
+            </svg>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="실시간 스트리밍" data-screen-label="15"
+  data-speaker-notes="원인이 둘이라 한 수단으로 안 풀린 이유, 세 안 중 하이브리드를 고른 API 제약, 측정 표의 불변 행까지">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">15</div>
+      <div class="head-title"><div class="k">AI 튜터링 · 실시간 스트리밍 · Pipeline</div><h2>실시간 채팅 스트리밍 파이프라인</h2>
+        <div class="sub">Virtual Thread 가 있는데 Reactor 를 더한 것은 취향이 아니라 API 제약 — 첫 글자 p95 12.37배 단축, 응답 완료 시각은 불변</div></div>
+    </div>
+    <div class="body-area">
+      <div class="trace" style="margin-bottom:1.5cqh">
+        <div class="trace-row"><span class="tk p">문제</span><span class="tx">토큰을 <code>doOnComplete</code> 에서 한 번에 발행해 <b>첫 글자 = 응답 완료 시각</b>, 따로 <code>blockLast()</code> 가 <b>바운디드 풀(core 10 / max 50 / queue 100)</b> 스레드를 스트림 끝까지 점유 — 원인이 <b>둘</b>이라 한 수단으로 풀리지 않음</span></div>
+        <div class="trace-row"><span class="tk s">해결</span><span class="tx">세 안을 나란히 놓고 <b>연결은 Virtual Thread, LLM 대기만 Reactor</b> 에 맡긴 하이브리드 채택 · 토큰은 도착 즉시 SSE 로 발행 — Spring AI 스트리밍(<code>ChatClient.stream()</code>)이 결과를 <b>Flux 로만</b> 주고, 전면 이전은 JPA · Security 재작성 비용</span></div>
+        <div class="trace-row"><span class="tk r">결과</span><span class="tx">첫 글자까지 p95 <b>21.40초 → 1.73초</b>(12.37배) · 스레드 풀 크기로 생기던 연결 상한(50) 제거 · 응답이 전부 끝나는 시각은 LLM 생성 속도가 정해 불변</span></div>
+      </div>
+      <div class="cols" style="grid-template-columns: 1.05fr 0.95fr">
+        <div class="table-block" style="justify-content:flex-start">
+          <div class="tcap">세 안 비교 — 무엇을 풀고 어디서 막히는가</div>
+          <div class="table-card fill">
+            <table class="compact">
+              <thead><tr><th style="width:19%">안</th><th style="width:26%">푸는 것</th><th style="width:43%">막히는 지점</th><th style="width:12%;white-space:nowrap">이 하나로<br />둘 다 되나</th></tr></thead>
+              <tbody>
+                <tr><td style="white-space:nowrap">WebFlux 전면 이전</td><td>연결과 대기를 모두 논블로킹으로</td><td>JPA · Security 를 리액티브로 <b>재작성</b>해야 함</td><td style="white-space:nowrap"><span class="up">기각</span></td></tr>
+                <tr><td style="white-space:nowrap">Virtual Thread 단독</td><td>설정 한 줄로 연결 수의 <b>스레드 풀 종속 제거</b></td><td>Spring AI 스트리밍(<code>stream()</code>)은 결과를 <b>Flux 로만</b> 줌 — VT 만으로는 전달 방식이 그대로</td><td style="white-space:nowrap"><span class="up">불충분</span></td></tr>
+                <tr><td style="white-space:nowrap">하이브리드 (채택)<br /><span style="font-weight:400">서블릿 + VT + Reactor</span></td><td>연결은 VT, <b>LLM 대기만</b> Reactor 에 위임</td><td>콜백 블로킹이 이벤트 루프를 점유 → <code>publishOn</code> 오프로딩 필요</td><td style="white-space:nowrap"><span class="down">채택</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="table-block" style="justify-content:flex-start">
+          <div class="tcap">동기 응답 대비 스트리밍 전환 효과</div>
+          <div class="table-card fill">
+            <table class="compact">
+              <thead><tr><th>측정 항목</th><th>개선 전</th><th>개선 후</th><th>변화</th></tr></thead>
+              <tbody>
+                <tr><td>첫 글자까지 (p95)</td><td>21.40초</td><td>1.73초</td><td><span class="down">12.37배 단축</span></td></tr>
+                <tr><td>첫 글자까지 (중앙값)</td><td>12.20초</td><td>1.09초</td><td><span class="down">11.19배 단축</span></td></tr>
+                <tr><td>첫 글자까지 (RAG 검색 미경유, 중앙값)</td><td>11.65초</td><td>0.55초</td><td><span class="down">21.18배 단축</span></td></tr>
+                <tr><td>동시 연결 상한</td><td>스레드 풀 최대 50, 초과 시 큐잉 후 거부</td><td><span class="down">풀 크기에 종속되지 않음</span></td><td><span class="down">풀 상한 제거</span></td></tr>
+                <tr><td>응답 완료까지 (중앙값)</td><td>12.20초</td><td>12.24초</td><td>불변, 개선 대상 아님</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:1.4cqh">
+        <div class="row"><span class="t g">트레이드오프</span><p>스택이 둘로 섞여 <b>경계마다 스케줄러를 의식</b>해야 함 — 토큰 콜백의 블로킹(Redis 저장 · 상태 전이)을 그대로 두면 OpenAI 응답을 읽는 <b>이벤트 루프를 점유</b>해 같은 루프의 다른 사용자 스트림까지 멈춤. 두 경로 모두 구독 직후 · 콜백 앞에 <code>publishOn(boundedElastic)</code> 을 둬 해소</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="오프로딩 전후" data-screen-label="16"
+  data-speaker-notes="publishOn 을 빼고 같은 경로를 돌려 콜백 스레드명이 소스와 같아지는 것을 실측으로 보인 장면">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">16</div>
+      <div class="head-title"><div class="k">AI 튜터링 · 실시간 스트리밍 · Offloading</div><h2>콜백이 이벤트 루프를 막을 때</h2>
+        <div class="sub">한 사용자의 콜백 블로킹이 같은 루프가 맡은 다른 사용자 스트림까지 멈춘다</div></div>
+    </div>
+    <div class="body-area">
+      <p class="lead-p">이벤트 루프는 여러 커넥션을 함께 맡아, 블로킹 콜백을 그 위에서 돌리면 <b>피해가 남의 요청까지 번진다</b>.
+        콜백 블로킹을 <b>300ms</b> 로 키우자 다른 세션 첫 청크가 <b>316ms</b> 밀림 — <code>publishOn</code> 뒤 <b>1~19ms</b>(5회).</p>
+
+      <div class="svgfig">
+        <svg viewBox="0 0 1180 218" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="elb-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+            <marker id="elb-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#246bff"/></marker>
+            <marker id="elb-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e08a2b"/></marker>
+          </defs>
+          <text class="lbl-l" style="fill:#8a4f10; font-weight:700" x="10" y="16">오프로딩 없음 — 콜백이 응답을 읽는 스레드에서 그대로 실행된다</text>
+
+          <text class="lbl-l" x="30" y="32">도착한 청크</text>
+          <rect class="node-a" x="30" y="38" width="220" height="32" rx="8"/>
+          <text class="lbl-s" x="140" y="58">① A 청크 — 루프가 집었다</text>
+          <rect x="30" y="78" width="220" height="32" rx="8" fill="rgba(224,138,43,0.06)" stroke="#e08a2b" stroke-width="1.5" stroke-dasharray="7 5"/>
+          <text class="lbl-s" x="140" y="98">B 청크 — 대기</text>
+          <rect x="30" y="118" width="220" height="32" rx="8" fill="rgba(224,138,43,0.06)" stroke="#e08a2b" stroke-width="1.5" stroke-dasharray="7 5"/>
+          <text class="lbl-s" x="140" y="138">C 청크 — 대기</text>
+          <text class="lbl-l" style="fill:#8a4f10" x="30" y="166">③ 루프가 돌아오지 않아 집히지 못한 채 쌓인다</text>
+
+          <path d="M250,54 H330 V100 H422" class="edge-a" marker-end="url(#elb-a)"/>
+
+          <path d="M478.9,163.0 A 64,64 0 0,1 429.9,121.9" fill="none" stroke="#8397b2" stroke-width="2.5" marker-end="url(#elb-r)"/>
+          <path d="M427.0,88.9 A 64,64 0 0,1 478.9,37.0" fill="none" stroke="#8397b2" stroke-width="2.5" marker-end="url(#elb-r)"/>
+          <path d="M501.1,37.0 A 64,64 0 0,1 550.1,78.1" fill="none" stroke="#8397b2" stroke-width="2.5" marker-end="url(#elb-r)"/>
+          <path d="M553.0,111.1 A 64,64 0 0,1 511.9,160.1" fill="none" stroke="#8397b2" stroke-width="2.5" marker-end="url(#elb-r)"/>
+          <circle cx="490" cy="100" r="52" fill="rgba(255,255,255,0.78)" stroke="none"/>
+          <text class="lbl" x="490" y="95">이벤트 루프</text>
+          <text class="lbl-s" x="490" y="115">reactive 스레드</text>
+
+          <path d="M490,164 V178" class="edge-a" marker-end="url(#elb-a)"/>
+          <rect class="node-g" x="350" y="180" width="290" height="32" rx="8"/>
+          <text class="lbl-s" x="495" y="200">A 청크 SSE 전송 — 서빙은 정상</text>
+
+          
+          <path d="M554,100 H700" class="edge" style="stroke:#e08a2b" marker-end="url(#elb-o)"/>
+          <rect class="node-w" x="700" y="68" width="450" height="64" rx="9"/>
+          <text class="lbl" x="925" y="94">② 같은 콜백이 블로킹 I/O 로 진입</text>
+          <text class="lbl-s" x="925" y="116">Redis 저장 · 상태 기계 sendEvent().blockLast()</text>
+          <text class="lbl-l" style="fill:#8a4f10" x="700" y="152">I/O 가 끝날 때까지 루프는 한 바퀴를 못 돈다</text>
+        </svg>
+      </div>
+
+      <div class="svgfig" style="margin-top:1cqh">
+        <svg viewBox="0 0 1180 218" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="tlw-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+          </defs>
+          <text class="lbl-l" style="fill:#0f6b3c; font-weight:700" x="10" y="16">오프로딩 후 — 가로축은 시간 · 콜백은 <tspan style="font-family:ui-monospace,Menlo,monospace">boundedElastic</tspan> 워커에서 실행</text>
+
+          <path d="M384,34 V170" stroke="#8397b2" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+          <text class="lbl-l" style="fill:#0f6b3c" x="392" y="30">넘긴 순간 — 루프는 ②가 끝나기를 기다리지 않고 곧바로 ③ 으로</text>
+
+          <text class="lbl" style="text-anchor:start" x="10" y="62">이벤트 루프</text>
+          <rect class="node-a" x="200" y="42" width="180" height="32" rx="8"/>
+          <text class="lbl-s" x="290" y="62">① A 집음 · 넘김</text>
+          <rect class="node-a" x="388" y="42" width="180" height="32" rx="8"/>
+          <text class="lbl-s" x="478" y="62">③ B 집음 · 넘김</text>
+          <rect class="node-a" x="576" y="42" width="180" height="32" rx="8"/>
+          <text class="lbl-s" x="666" y="62">④ C 집음 · 넘김</text>
+
+          <text class="lbl" style="text-anchor:start" x="10" y="106">워커 #1</text>
+          <rect class="node-g" x="388" y="86" width="512" height="32" rx="8"/>
+          <text class="lbl-s" x="644" y="106">② A 콜백 — Redis 저장 · 상태 기계 blockLast (블로킹)</text>
+
+          <text class="lbl" style="text-anchor:start" x="10" y="150">워커 #2</text>
+          <rect class="node-g" x="576" y="130" width="512" height="32" rx="8"/>
+          <text class="lbl-s" x="832" y="150">B 콜백 — 같은 작업이 다른 워커에서 겹쳐 진행</text>
+
+          <path d="M200,180 H1150" stroke="#8397b2" stroke-width="1.5" fill="none" marker-end="url(#tlw-a)"/>
+          <text class="lbl-l" x="200" y="202">루프가 쓰는 시간은 짧고 서로 붙어 있다. 블로킹은 워커 쪽에서 겹쳐 흐른다</text>
+          <text class="lbl-s" style="text-anchor:end" x="1150" y="202">시간</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="안정화 계층 설계" data-screen-label="17" data-speaker-notes="서킷을 지점별로 차등한 이유와, 서킷이 반쪽만 덮고 있던 것을 실패 주입으로 발견한 과정">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">17</div>
+      <div class="head-title"><div class="k">AI 튜터링 · 실시간 스트리밍 · Resilience</div><h2>LLM 호출 · 세션 안정화 계층</h2>
+        <div class="sub">장애 전파는 서킷으로 끊고, 비정상 전이는 막되 고착 상태는 회수한다</div></div>
+    </div>
+    <div class="body-area">
+      <p class="lead-p"><span class="mk p">문제</span>외부 LLM 은 느려지거나 응답하지 않는다. <b>끊는 것만으로는 부족하고</b>, 끊긴 뒤 세션이 어느 상태에 멈춰 있는지까지 정해야
+        다음 요청이 받아들여진다. 그래서 <b>서킷(호출)과 상태 기계(세션)를 함께</b> 설계했다.</p>
+      <div class="cols two">
+        <div class="stack">
+          <div class="panel tight" style="flex:1">
+            <div class="sub-label"><span class="mk s">해결</span>① 서킷 — 최근 호출 창의 실패율로 열고, 시험 호출로 닫는다</div>
+            <div class="svgfig">
+            <svg viewBox="0 0 610 196" xmlns="http://www.w3.org/2000/svg" style="--fs:14.2px">
+              <defs>
+                <marker id="cb-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e08a2b"/></marker>
+                <marker id="cb-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+                <marker id="cb-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#17864a"/></marker>
+              </defs>
+              <text class="lbl-l" x="10" y="15">최근 호출 10건 창 (COUNT_BASED) · 초록 성공 / 주황 실패</text>
+              <rect class="node-g" x="10" y="22" width="26" height="22" rx="5"/>
+              <rect class="node-g" x="41" y="22" width="26" height="22" rx="5"/>
+              <rect class="node-w" x="72" y="22" width="26" height="22" rx="5"/>
+              <rect class="node-g" x="103" y="22" width="26" height="22" rx="5"/>
+              <rect class="node-w" x="134" y="22" width="26" height="22" rx="5"/>
+              <rect class="node-w" x="165" y="22" width="26" height="22" rx="5"/>
+              <rect class="node-g" x="196" y="22" width="26" height="22" rx="5"/>
+              <rect class="node-w" x="227" y="22" width="26" height="22" rx="5"/>
+              <rect class="node-w" x="258" y="22" width="26" height="22" rx="5"/>
+              <rect class="node-g" x="289" y="22" width="26" height="22" rx="5"/>
+              <text class="lbl-l" x="330" y="37">실패 5 / 10 = 50%</text>
+              <text class="lbl-l" x="330" y="55">≥ 임계 50% → OPEN 전이</text>
+              <rect class="node-g" x="10" y="100" width="130" height="46" rx="9"/>
+              <text class="lbl" x="75" y="120">CLOSED</text>
+              <text class="lbl-s" x="75" y="137">통과 · 창에 기록</text>
+              <rect class="node-w" x="235" y="100" width="130" height="46" rx="9"/>
+              <text class="lbl" x="300" y="120">OPEN</text>
+              <text class="lbl-s" x="300" y="137">즉시 503 · 차단</text>
+              <rect class="node-a" x="470" y="100" width="130" height="46" rx="9"/>
+              <text class="lbl" x="535" y="120">HALF_OPEN</text>
+              <text class="lbl-s" x="535" y="137">시험 호출 3건</text>
+              <path class="edge" style="stroke:#e08a2b;stroke-width:2" d="M140,123 H235" marker-end="url(#cb-w)"/>
+              <text class="lbl-s" x="187.5" y="115">실패율 ≥ 50%</text>
+              <path class="edge" style="stroke-width:1.8" d="M365,123 H470" marker-end="url(#cb-n)"/>
+              <text class="lbl-s" x="417.5" y="115">30초 뒤 자동</text>
+              <path class="edge-d" style="stroke:#e08a2b" d="M535,100 V80 H300 V100" marker-end="url(#cb-w)"/>
+              <text class="lbl-s" x="417.5" y="72">시험 3건 실패율 ≥ 50%</text>
+              <path class="edge" style="stroke:#17864a;stroke-width:1.8" d="M535,146 V168 H75 V146" marker-end="url(#cb-g)"/>
+              <text class="lbl-s" x="305" y="186">시험 3건 실패율 &lt; 50%</text>
+            </svg>
+            </div>
+          </div>
+        </div>
+        <div class="panel dark">
+          <div class="sub-label"><span class="mk s">해결</span>③ 서킷 범위를 구독 시점까지 넓힌다 — 반쪽 구간은 실패 주입으로 발견</div>
+          <p><code>chatStream</code> 이 <b>메서드 본문에서</b> 히스토리 조회와 RAG 벡터 검색을 동기로 했다.
+            Redis · 벡터 스토어가 죽으면 <b>Flux 를 만들기도 전에 예외가 나가는데</b>, 리액티브 서킷은 <b>구독 시점</b>부터 감싼다 —
+            그 실패는 <b>한 건도 집계되지 않았다</b>.</p>
+          <div class="divider"></div>
+          <p>조회 · 조립을 <code>Flux.defer</code> 로 <b>구독 시점까지 옮겨</b> 검색 실패까지 서킷 안으로 편입.
+            <b>실패 주입이 아니면 초록으로 남았을 결함</b>.</p><div class="divider"></div><p><b>같은 결함의 두 번째 증상</b> — 에러 콜백을 건너뛰어 세션이 PROCESSING 에 고착, 첫 요청 500 뒤 2~6번째 연속 401. <b>감수한 비용</b> — <code>subscribe()</code> 전에는 아무 검증도 일어나지 않음</p>
+        </div>
+      </div>
+      <div class="svgfig" style="margin-top:1.2cqh; flex:none">
+        <div class="sub-label"><span class="mk s">해결</span>② 세션 상태는 선언된 (상태, 이벤트) 쌍으로만 — 빈 응답 · LLM 일시 실패로 PROCESSING 에 고착된 세션을 회수하는 전이를 따로 둠</div>
+            <svg viewBox="0 0 1000 170" xmlns="http://www.w3.org/2000/svg" style="--fs:15.2px; max-height:19cqh">
+            <defs>
+            <marker id="sm-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#246bff"/></marker>
+            <marker id="sm-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e08a2b"/></marker>
+            <marker id="sm-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#17864a"/></marker>
+            </defs>
+            <rect class="node" x="20" y="12" width="160" height="38" rx="8"/><text class="lbl-s" x="100" y="36">IDLE</text>
+            <rect class="node-a" x="200" y="12" width="160" height="38" rx="8"/><text class="lbl-s" x="280" y="36">CONNECTED</text>
+            <path class="edge-a" d="M180,31 H200" marker-end="url(#sm-a)"/>
+            <rect class="node-a" x="400" y="12" width="160" height="38" rx="8"/><text class="lbl-s" x="480" y="36">PROCESSING</text>
+            <path class="edge-a" d="M360,31 H400" marker-end="url(#sm-a)"/>
+            <rect class="node-a" x="600" y="12" width="160" height="38" rx="8"/><text class="lbl-s" x="680" y="36">STREAMING</text>
+            <path class="edge-a" d="M560,31 H600" marker-end="url(#sm-a)"/>
+            <rect class="node-g" x="800" y="12" width="160" height="38" rx="8"/><text class="lbl-s" x="880" y="36">COMPLETED</text>
+            <path class="edge-a" d="M760,31 H800" marker-end="url(#sm-a)"/>
+            <rect class="node-w" x="200" y="112" width="160" height="38" rx="8"/><text class="lbl-s" x="280" y="136">STREAM_ERROR</text>
+            <rect class="node-w" x="430" y="112" width="160" height="38" rx="8"/><text class="lbl-s" x="510" y="136">TIMEOUT</text>
+            <rect class="node-w" x="660" y="112" width="160" height="38" rx="8"/><text class="lbl-s" x="740" y="136">TERMINATED</text>
+            <path class="edge" style="stroke:#e08a2b" d="M480,50 V80 H510 V112" marker-end="url(#sm-w)"/>
+            <path class="edge" style="stroke:#e08a2b" d="M680,50 V80 H510 V112" marker-end="url(#sm-w)"/>
+            <path class="edge" style="stroke:#17864a" d="M280,112 V80 H400" marker-end="url(#sm-g)"/>
+            <text class="lbl-l" x="292" y="70">고착 세션 회수 전이</text>
+            <text class="lbl-l" x="20" y="166">선언된 (상태, 이벤트) 쌍만 허용 · 총 8상태 — 정상 5 + 에러 3</text>
+            </svg>
+      </div>
+      <div class="trace">
+        <div class="trace-row"><span class="tk r">결과</span><span class="tx">시험용 엔드포인트(<code>/test/circuit</code>, LLM 과 같은 서킷 설정)에 3초 지연을 심은 부하 243,820건 중 95%가 <b>1.76ms</b> 안에 응답(서킷의 즉시 거절) · 최댓값 3,026ms 는 서킷이 막기 전 3초를 그대로 기다린 호출</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-label="세션 저장소" data-screen-label="18"
+  data-speaker-notes="채팅만 Cluster 로 올린 근거와, 읽기 분산이 처리량과 정합성에 동시에 걸린 지점을 보여준다">
+  <span class="watermark">김민성 · Minsung Kim</span>
+  <div class="pad">
+    <div class="head">
+      <div class="folder">18</div>
+      <div class="head-title"><div class="k">AI 튜터링 · 세션 저장소 · Redis Cluster</div><h2>채팅 세션 저장소 설계</h2>
+        <div class="sub">채팅만 Cluster 로 이중화, 읽기는 replica 로 분산해 포화 지점 이동</div></div>
+    </div>
+    <div class="body-area">
+      <p class="lead-p"><span class="mk p">문제</span>Redis Standalone 단일 노드는 장애 시 <b>모든 세션의 멀티턴 문맥을 한 번에 잃는</b> 단일 장애점.
+        <b>채팅 세션만 Cluster 로 이중화</b>(인증 토큰은 재로그인으로 복구돼 Standalone 유지)하고 읽기 · 쓰기 경로를 분리했다.</p>
+      <div class="metrics c3">
+        <div class="mcard"><strong>약 6만 → 약 11만</strong><span>합계 처리량 포화 지점 이동</span><small>ops/s · 한 슬롯 · 최고점끼리 1.72배</small></div>
+        <div class="mcard"><strong>쓰기 +156%</strong><span>가장 크게 이득 본 쪽</span><small>읽기는 +41% — 조회를 replica 로 빼자 쓰기 대기가 사라짐(24대)</small></div>
+        <div class="mcard"><strong>7.85초</strong><span>Master 강제 종료 → 쓰기 재개</span><small>3회 7.74 ~ 7.92초 · 장애 판정 5초 + 승격</small></div>
+      </div>
+      <div class="cols two">
+        <div class="panel">
+          <div class="sub-label"><span class="mk s">해결</span>읽기 · 쓰기 경로 분리 — CQRS 식 라우팅(모델은 하나, 읽기만 replica)</div>
+          <div class="svgfig">
+            <svg viewBox="0 0 640 275" xmlns="http://www.w3.org/2000/svg" style="--fs:15.2px; --fs-l:15.5px">
+              <defs>
+                <marker id="cq-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#246bff"/></marker>
+                <marker id="cq-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e08a2b"/></marker>
+                <marker id="cq-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#17864a"/></marker>
+                <marker id="cq-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+              </defs>
+              <text class="lbl-l" x="10" y="22">ChatServiceImpl — 요청 하나 안의 세 접근</text>
+              <text class="lbl-l" x="365" y="22">Cluster 한 슬롯 · chat:{sessionId}:*</text>
+              <rect class="grp" x="365" y="34" width="265" height="232" rx="12"/>
+              <rect class="node-a" x="10" y="52" width="175" height="56" rx="10"/>
+              <text class="lbl" x="97.5" y="77">쓰기 (Command)</text>
+              <text class="lbl-s" x="97.5" y="96">saveMessage · RPUSH</text>
+              <rect class="node-w" x="10" y="122" width="175" height="56" rx="10"/>
+              <text class="lbl" x="97.5" y="147">저장 직후 읽기</text>
+              <text class="lbl-s" x="97.5" y="166">프롬프트 조립 · LRANGE</text>
+              <rect class="node-g" x="10" y="192" width="175" height="56" rx="10"/>
+              <text class="lbl" x="97.5" y="217">조회 (Query)</text>
+              <text class="lbl-s" x="97.5" y="236">히스토리 · LRANGE</text>
+              <rect class="node-a" x="400" y="50" width="180" height="60" rx="10"/>
+              <text class="lbl" x="490" y="77">Master</text>
+              <text class="lbl-s" x="490" y="96">쓰기 · 저장 직후 읽기</text>
+              <rect class="node-g" x="400" y="190" width="180" height="60" rx="10"/>
+              <text class="lbl" x="490" y="217">Replica</text>
+              <text class="lbl-s" x="490" y="236">조회 분산</text>
+              <path class="edge-a" d="M185,80 H400" marker-end="url(#cq-a)"/>
+              <text class="lbl-s" x="275" y="72">Master 한 곳</text>
+              <path class="edge" style="stroke:#e08a2b;stroke-width:2" d="M185,150 H490 V110" marker-end="url(#cq-w)"/>
+              <text class="lbl-s" x="275" y="142">Master 고정</text>
+              <path class="edge" style="stroke:#17864a;stroke-width:2" d="M185,220 H400" marker-end="url(#cq-g)"/>
+              <text class="lbl-s" x="275" y="212">REPLICA_PREFERRED</text>
+              <path class="edge-d" d="M580,80 H610 V220 H580" marker-end="url(#cq-n)"/>
+              <text class="lbl-s" x="603" y="150" style="text-anchor:end">비동기 복제</text>
+              <text class="lbl-s" x="603" y="172" style="text-anchor:end">수렴 p95 0.73ms</text>
+            </svg>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="sub-label"><span class="mk r">결과</span>읽기/쓰기 분리 실측 — 합계 처리량</div>
+          <div class="svgfig">
+            <svg viewBox="0 0 720 385" xmlns="http://www.w3.org/2000/svg" style="--fs:17px">
+              <text class="lbl-l" x="18" y="24">합계 처리량 (ops/s)</text>
+              <rect x="112" y="72" width="20" height="3.5" fill="#e08a2b"/>
+              <text class="lbl-l" x="140" y="80">분리 전: 읽기·쓰기 모두 master</text>
+              <rect x="112" y="98" width="20" height="3.5" fill="#17864a"/>
+              <text class="lbl-l" x="140" y="106">분리 후: 읽기는 replica</text>
+
+              <line x1="92" x2="690" y1="56" y2="56" stroke="#c3cedd" stroke-width="1" stroke-dasharray="3 4"/>
+              <line x1="92" x2="690" y1="123.5" y2="123.5" stroke="#c3cedd" stroke-width="1" stroke-dasharray="3 4"/>
+              <line x1="92" x2="690" y1="191" y2="191" stroke="#c3cedd" stroke-width="1" stroke-dasharray="3 4"/>
+              <line x1="92" x2="690" y1="258.5" y2="258.5" stroke="#c3cedd" stroke-width="1" stroke-dasharray="3 4"/>
+
+              <text class="lbl-s" style="text-anchor:end" x="84" y="60">120,000</text>
+              <text class="lbl-s" style="text-anchor:end" x="84" y="128">90,000</text>
+              <text class="lbl-s" style="text-anchor:end" x="84" y="195">60,000</text>
+              <text class="lbl-s" style="text-anchor:end" x="84" y="263">30,000</text>
+              <text class="lbl-s" style="text-anchor:end" x="84" y="330">0</text>
+
+              <line x1="92" x2="92" y1="56" y2="326" stroke="#8397b2" stroke-width="1.4"/>
+              <line x1="92" x2="690" y1="326" y2="326" stroke="#8397b2" stroke-width="1.4"/>
+
+              <path d="M104,279.80 L236.7,241.26 L369.4,201.23 L502.2,189.91 L600,182.66 L690,196.38"
+                fill="none" stroke="#e08a2b" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+              <path d="M104,274.17 L236.7,224.37 L369.4,153.86 L502.2,78.95 L600,86.48 L690,84.71"
+                fill="none" stroke="#17864a" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+
+              <circle cx="104" cy="279.80" r="3.5" fill="#e08a2b"/>
+              <circle cx="236.7" cy="241.26" r="3.5" fill="#e08a2b"/>
+              <circle cx="369.4" cy="201.23" r="3.5" fill="#e08a2b"/>
+              <circle cx="502.2" cy="189.91" r="3.5" fill="#e08a2b"/>
+              <circle cx="600" cy="182.66" r="3.5" fill="#e08a2b"/>
+              <circle cx="690" cy="196.38" r="3.5" fill="#e08a2b"/>
+
+              <circle cx="104" cy="274.17" r="3.5" fill="#17864a"/>
+              <circle cx="236.7" cy="224.37" r="3.5" fill="#17864a"/>
+              <circle cx="369.4" cy="153.86" r="3.5" fill="#17864a"/>
+              <circle cx="502.2" cy="78.95" r="3.5" fill="#17864a"/>
+              <circle cx="600" cy="86.48" r="3.5" fill="#17864a"/>
+              <circle cx="690" cy="84.71" r="3.5" fill="#17864a"/>
+
+              <text class="lbl-l" style="fill:#0f6b3c;text-anchor:end" x="690" y="112">약 11만으로 포화 지점 이동</text>
+              <text class="lbl-l" style="fill:#8a4f10;text-anchor:end" x="690" y="226">약 6만에서 포화 — 노드당 이벤트 루프 1개</text>
+
+              <text class="lbl-s" x="104" y="346">3</text>
+              <text class="lbl-s" x="236.7" y="346">6</text>
+              <text class="lbl-s" x="369.4" y="346">12</text>
+              <text class="lbl-s" x="502.2" y="346">24</text>
+              <text class="lbl-s" x="600" y="346">40</text>
+              <text class="lbl-s" x="690" y="346">64</text>
+              <text class="lbl-s" x="397" y="370">동시 클라이언트 수 (대) · log₂ 눈금</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+      <!-- 19 · AI HARNESS ------------------------------------------------- -->
+      <section class="slide" data-label="AI 하네스" data-screen-label="19"
+        data-speaker-notes="AI 하네스: 역할 이름은 실제 에이전트 이름. 결과는 2026-07-28 스트리밍 리팩터링 리뷰 보고서(backend/report) 기준 — 검출까지만 말하고, 수정 여부는 건별로 답한다">
+        <span class="watermark">김민성 · Minsung Kim</span>
+        <div class="pad">
+          <div class="head">
+            <div class="folder">19</div>
+            <div class="head-title"><div class="k">개발 방식 · AI Harness</div><h2>AI 하네스로 코드 품질 검증</h2>
+              <div class="sub">직접 구현한 코드를 리뷰어 · 검증기 · 보고서 생성기로 역할을 나눈 AI 에이전트에 통과</div></div>
+          </div>
+          <div class="body-area">
+            <p class="lead-p"><span class="mk p">문제</span>AI 한 번의 호출에 리뷰 · 테스트 · 정리를 함께 맡기면 <b>지적이 한 관점에 몰리고</b>,
+              기준 브랜치 · Docker 가 필요한 통합 테스트 · 코드 규약 같은 <b>저장소 사실을 매번 다시 설명</b>해야 함.</p>
+            <div class="svgfig">
+              <svg viewBox="0 0 1180 392" xmlns="http://www.w3.org/2000/svg" style="--fs:14px; --fs-l:16px">
+                <defs>
+                  <marker id="hn-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#246bff"/></marker>
+                  <marker id="hn-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8397b2"/></marker>
+                  <marker id="hn-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e08a2b"/></marker>
+                </defs>
+
+                <rect class="node-w" x="10" y="30" width="190" height="100" rx="10"/>
+                <text class="lbl" x="105" y="66">요구사항 · 리서치</text>
+                <text class="lbl-s" x="105" y="90">현장 상황 파악</text>
+                <text class="lbl-s" x="105" y="110">개발 옵션 비교 · 제시</text>
+                <rect class="node-a" x="10" y="199" width="190" height="80" rx="10"/>
+                <text class="lbl" x="105" y="233">직접 구현</text>
+                <text class="lbl-s" x="105" y="256">git diff stage...HEAD</text>
+                <path class="edge" d="M105,130 V199" marker-end="url(#hn-n)"/>
+
+                <rect class="grp" x="250" y="10" width="640" height="340" rx="14"/>
+                <text class="lbl-l" x="268" y="36">AI 하네스 — 역할마다 에이전트 분리</text>
+                <rect class="node" x="270" y="48" width="600" height="60" rx="10"/>
+                <text class="lbl" x="570" y="72">저장소 사실 노트 (PROJECT_NOTES.md)</text>
+                <text class="lbl-s" x="570" y="96">빌드 · 기준 브랜치 · 코드 규약 · 알려진 함정 — 모든 역할이 먼저 읽음</text>
+                <path class="edge-d" d="M360,108 V140" marker-end="url(#hn-n)"/>
+                <path class="edge-d" d="M570,108 V140" marker-end="url(#hn-n)"/>
+                <path class="edge-d" d="M780,108 V140" marker-end="url(#hn-n)"/>
+
+                <rect class="node-a" x="270" y="140" width="180" height="198" rx="10"/>
+                <text class="lbl" x="360" y="168">코드 리뷰어</text>
+                <text class="lbl-s" x="360" y="189">읽기 전용 · 3종 병렬</text>
+                <text class="lbl-s" x="360" y="218" style="fill:#233150;font-weight:700">diff-reviewer</text>
+                <text class="lbl-s" x="360" y="236">로직 · 호출자</text>
+                <text class="lbl-s" x="360" y="262" style="fill:#233150;font-weight:700">convention-auditor</text>
+                <text class="lbl-s" x="360" y="280">설계 규약</text>
+                <text class="lbl-s" x="360" y="306" style="fill:#233150;font-weight:700">security-reviewer</text>
+                <text class="lbl-s" x="360" y="324">인증 · 인가</text>
+
+                <rect class="node-s" x="480" y="140" width="180" height="198" rx="10"/>
+                <text class="lbl" x="570" y="168">검증기</text>
+                <text class="lbl-s" x="570" y="189">테스트 기반 검증</text>
+                <text class="lbl-s" x="570" y="218" style="fill:#233150;font-weight:700">test-writer</text>
+                <text class="lbl-s" x="570" y="236">단위 테스트 작성</text>
+                <text class="lbl-s" x="570" y="262" style="fill:#233150;font-weight:700">test-runner</text>
+                <text class="lbl-s" x="570" y="280">단위 · 통합 실행</text>
+                <text class="lbl-s" x="570" y="306" style="fill:#233150;font-weight:700">debugger</text>
+                <text class="lbl-s" x="570" y="324">실패 원인 추적</text>
+
+                <rect class="node-g" x="690" y="140" width="180" height="198" rx="10"/>
+                <text class="lbl" x="780" y="168">보고서 생성기</text>
+                <text class="lbl-s" x="780" y="189">메인 세션이 병합</text>
+                <text class="lbl-s" x="780" y="218" style="fill:#233150;font-weight:700">파일:라인 5열 표</text>
+                <text class="lbl-s" x="780" y="236">담당 · 유형 · 심각도</text>
+                <text class="lbl-s" x="780" y="262" style="fill:#233150;font-weight:700">같은 줄 지적 병합</text>
+                <text class="lbl-s" x="780" y="280">심각도 높은 쪽 채택</text>
+                <text class="lbl-s" x="780" y="306" style="fill:#233150;font-weight:700">report/날짜-주제.md</text>
+                <text class="lbl-s" x="780" y="324">품질 보고서 누적</text>
+
+                <path class="edge-a" d="M200,239 H270" marker-end="url(#hn-a)"/>
+                <path class="edge-a" d="M450,239 H480" marker-end="url(#hn-a)"/>
+                <path class="edge-a" d="M660,239 H690" marker-end="url(#hn-a)"/>
+                <path class="edge-a" d="M870,239 H930" marker-end="url(#hn-a)"/>
+
+                <rect class="node-w" x="930" y="199" width="240" height="80" rx="10"/>
+                <text class="lbl" x="1050" y="233">지적 반영</text>
+                <text class="lbl-s" x="1050" y="256">수정 뒤 같은 하네스 재통과</text>
+                <path class="edge" style="stroke:#e08a2b;stroke-width:2" d="M1050,279 V382 H105 V279" marker-end="url(#hn-w)"/>
+                <text class="lbl-s" x="570" y="372">다음 변경도 같은 경로</text>
+              </svg>
+            </div>
+            <p class="lead-p" style="margin:1.4cqh 0 0; max-width:none"><span class="mk r">결과</span>스트리밍 리팩터링 커밋 리뷰 — 리뷰어 3종 병렬 실행으로
+              <b>9건 검출(high 2 · medium 4 · low 3)</b>, 파일:라인 기준 한 표로 병합</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10 · CLOSING ----------------------------------------------------- -->
+      <section class="slide closing" data-label="마무리" data-screen-label="20"
+        data-speaker-notes="마무리: 감사 인사 + 연락처. 표지와 같은 연락처.">
+        <span class="end-name">김민성 · Minsung Kim</span>
+        <div class="pad">
+          <h1>THANK YOU</h1>
+          <div class="ty-sub">읽어주셔서 감사합니다.</div>
+          <div class="cc">
+            <div><b>Phone</b> 010-8976-2340</div>
+            <div><b>Email</b> mskim.bm@gmail.com</div>
+            <div><b>GitHub</b> github.com/mskim98</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const viewport = document.getElementById('viewport');
+    const rail = document.getElementById('rail');
+    const slides = Array.from(stage.querySelectorAll('.slide'));
+    const total = slides.length;
+    const pad2 = n => String(n).padStart(2, '0');
+    let current = 0, lastWheel = 0, touchX = null, touchY = null;
+
+    // ── build slide-preview thumbnails (scaled live clones) ──
+    const thumbs = slides.map((s, i) => {
+      const t = document.createElement('button');
+      t.className = 'thumb'; t.type = 'button';
+      t.setAttribute('aria-label', pad2(i + 1) + ' ' + (s.dataset.label || ''));
+      const mini = document.createElement('div'); mini.className = 'mini';
+      mini.appendChild(s.cloneNode(true));          // container-query units re-scale to the thumb size
+      const cap = document.createElement('div'); cap.className = 'cap';
+      cap.innerHTML = '<span class="n">' + pad2(i + 1) + '</span><span class="l">' + (s.dataset.label || '') + '</span>';
+      t.append(mini, cap);
+      t.addEventListener('click', () => show(i));
+      rail.insertBefore(t, rail.querySelector('.rail-btn'));
+      return t;
+    });
+
+    function show(i) {
+      current = Math.max(0, Math.min(total - 1, i));
+      slides.forEach((s, n) => s.classList.toggle('active', n === current));
+      thumbs.forEach((t, n) => t.classList.toggle('active', n === current));
+      thumbs[current].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      history.replaceState(null, '', '#slide-' + (current + 1));
+    }
+
+    function fitStage() {
+      const r = viewport.getBoundingClientRect();
+      const scale = Math.min((r.width - 48) / 1280, (r.height - 48) / 720);
+      stage.style.transform = 'scale(' + Math.max(scale, 0.05) + ')';
+    }
+
+    window.addEventListener('resize', fitStage);
+    viewport.addEventListener('wheel', e => {
+      const now = Date.now();
+      const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if (Math.abs(delta) < 18 || now - lastWheel < 450) return;
+      e.preventDefault(); lastWheel = now;
+      show(delta > 0 ? current + 1 : current - 1);
+    }, { passive: false });
+    viewport.addEventListener('touchstart', e => { touchX = e.changedTouches[0].clientX; touchY = e.changedTouches[0].clientY; }, { passive: true });
+    viewport.addEventListener('touchend', e => {
+      if (touchX === null) return;
+      const dx = e.changedTouches[0].clientX - touchX, dy = e.changedTouches[0].clientY - touchY;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(current + (dx < 0 ? 1 : -1));
+      touchX = touchY = null;
+    }, { passive: true });
+    window.addEventListener('keydown', e => {
+      if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(current + 1); }
+      else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); show(current - 1); }
+      else if (e.key === 'Home') { e.preventDefault(); show(0); }
+      else if (e.key === 'End') { e.preventDefault(); show(total - 1); }
+    });
+    window.addEventListener('hashchange', () => {
+      const m = location.hash.match(/slide-(\d+)/);
+      if (m) show(Number(m[1]) - 1);
+    });
+
+    // guide-label toggle (show/hide image placeholder captions)
+    const gt = document.getElementById('guideToggle');
+    gt.addEventListener('click', () => {
+      const on = getComputedStyle(document.documentElement).getPropertyValue('--guide-display').trim() !== 'none';
+      document.documentElement.style.setProperty('--guide-display', on ? 'none' : 'block');
+      gt.textContent = on ? '가이드 보이기' : '가이드 숨기기';
+    });
+
+    fitStage();
+    const m = location.hash.match(/slide-(\d+)/);
+    show(m ? Number(m[1]) - 1 : 0);
+  </script>
+</body>
+</html>
